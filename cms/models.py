@@ -303,7 +303,7 @@ class News(models.Model):
 
     class Meta:
         db_table = 'news'
-        managed = False
+        managed = True
 
     def __str__(self):
         return self.title or ''
