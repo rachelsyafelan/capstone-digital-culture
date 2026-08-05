@@ -19,7 +19,7 @@ SECRET_KEY = os.environ.get(
 )
 
 # Force DEBUG = True sementara untuk melihat detail error di browser
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('1', 'true', 'yes')
 
 # Tambahkan domain Railway ke dalam ALLOWED_HOSTS
 ALLOWED_HOSTS = [
