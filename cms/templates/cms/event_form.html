@@ -1,0 +1,732 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ action }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Base ───────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background: #f8fafc;
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
+    color: #1e293b;
+}
+
+/* ── Top Nav ────────────────────────────────────── */
+.topnav {
+    background: rgba(15, 81, 50, 0.96); /* Dark Green #0F5132 */
+    backdrop-filter: blur(12px);
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.topnav-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.back-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.85);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.back-pill:hover {
+    background: rgba(163, 230, 53, 0.15);
+    color: #A3E635; /* Lime Green #A3E635 */
+    border-color: rgba(163, 230, 53, 0.3);
+}
+.nav-title {
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ── Page wrapper ────────────────────────────────── */
+.page-wrap {
+    max-width: 860px;
+    margin: 36px auto 80px;
+    padding: 0 24px;
+}
+
+/* ── Section heading ─────────────────────────────── */
+.section-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin: 36px 0 16px;
+    padding-left: 10px;
+    border-left: 3px solid #A3E635;
+    padding-left: 10px;
+}
+.section-heading:first-of-type {
+    margin-top: 0;
+}
+
+/* ── Card ────────────────────────────────────────── */
+.card {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(15, 81, 50, 0.08);
+    padding: 40px 48px;
+}
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+}
+.card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0F5132, #187146);
+    color: #A3E635;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(15, 81, 50, 0.2);
+}
+.card-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+.card-header p {
+    font-size: 13px;
+    color: #64748b;
+    margin: 2px 0 0;
+}
+
+/* ── Error banner (server-side validation) ───────── */
+.error-banner {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 13px;
+    color: #991b1b;
+    margin-bottom: 32px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    line-height: 1.6;
+}
+.error-banner-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.error-banner ul { margin: 4px 0 0 18px; padding: 0; }
+.error-banner li { margin-bottom: 2px; }
+
+/* ── Form row layouts ────────────────────────────── */
+.f-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 0;
+}
+.f-full {
+    grid-column: 1 / -1;
+}
+
+/* ── Field ───────────────────────────────────────── */
+.f-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 20px;
+}
+.f-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.f-label .opt {
+    font-weight: 400;
+    color: #94a3b8;
+    font-size: 11.5px;
+}
+.f-input,
+.f-select,
+.f-textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #d1d9f0;
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    color: #1e293b;
+    background: #fcfcfc;
+    transition: all 0.25s ease;
+    outline: none;
+}
+.f-input:hover,
+.f-select:hover,
+.f-textarea:hover {
+    background: #ffffff;
+    border-color: #cbd5e1;
+}
+.f-input:focus,
+.f-select:focus,
+.f-textarea:focus {
+    background: #ffffff;
+    border-color: #0F5132;
+    box-shadow: 0 0 0 3px rgba(163, 230, 53, 0.25);
+}
+.f-textarea {
+    min-height: 110px;
+    resize: vertical;
+    line-height: 1.6;
+}
+.f-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+}
+.f-hint {
+    font-size: 11.5px;
+    color: #94a3b8;
+    margin-top: 4px;
+    line-height: 1.5;
+}
+
+/* ── Status badges in select ─────────────────────── */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+.status-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+.status-pill input[type="radio"] { display: none; }
+.status-pill.s-draft     { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+.status-pill.s-published { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+.status-pill.s-completed { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+.status-pill.s-archived  { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+.status-pill.checked, .status-pill:has(input:checked) {
+    box-shadow: 0 0 0 3px rgba(163, 230, 53, 0.4);
+    border-color: #0F5132;
+    transform: translateY(-1px);
+}
+
+/* ── Image preview ───────────────────────────────── */
+.img-preview-wrap {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.img-preview {
+    width: 120px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid rgba(15, 81, 50, 0.15);
+}
+.img-preview-label {
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* ── Capacity helper ─────────────────────────────── */
+.capacity-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    padding: 8px 12px;
+    background: rgba(163, 230, 53, 0.1);
+    border-radius: 8px;
+    font-size: 12px;
+    color: #0F5132;
+    border: 1px solid rgba(163, 230, 53, 0.3);
+}
+
+/* ── Info banner ─────────────────────────────────── */
+.info-banner {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 13px;
+    color: #334155;
+    margin-bottom: 32px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    line-height: 1.6;
+}
+.info-banner-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── Status guide ────────────────────────────────── */
+.status-guide {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+}
+.sg-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+.sg-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+.sg-text { font-size: 12px; color: #475569; line-height: 1.5; }
+.sg-text strong { display: block; font-size: 13px; color: #0f172a; margin-bottom: 2px; }
+
+/* ── Button row ──────────────────────────────────── */
+.btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 36px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(0,0,0,0.07);
+}
+.btn-primary {
+    background: #0F5132;
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 32px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(15, 81, 50, 0.15);
+}
+.btn-primary:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 8px 24px rgba(15, 81, 50, 0.25); 
+    background: #136640; 
+}
+.btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 13px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+.btn-secondary:hover { 
+    background: #e2e8f0; 
+    color: #334155;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 640px) {
+    .f-row { grid-template-columns: 1fr; }
+    .card { padding: 24px 20px; }
+    .btn-row { flex-direction: column; }
+    .btn-primary, .btn-secondary { justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+    <div class="topnav-inner">
+        <a href="{% url 'admin_explore' %}" class="back-pill">← Explore Admin</a>
+        <span class="nav-title">{{ action }}</span>
+    </div>
+</nav>
+
+<div class="page-wrap">
+<div class="card">
+
+    <!-- Header -->
+    <div class="card-header">
+        <div class="card-icon">{% if event %}✏️{% else %}➕{% endif %}</div>
+        <div>
+            <h1>{{ action }}</h1>
+            <p>{% if event %}Perbarui informasi dan status lifecycle event.{% else %}Buat event baru — otomatis dimulai sebagai Draft.{% endif %}</p>
+        </div>
+    </div>
+
+    {% if errors %}
+    <div class="error-banner">
+        <span class="error-banner-icon">⚠️</span>
+        <div>
+            <strong style="display:block;margin-bottom:4px;color:#991b1b;">Event belum bisa disimpan</strong>
+            <ul>
+                {% for err in errors %}
+                <li>{{ err }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Info banner -->
+    <div class="info-banner">
+        <span class="info-banner-icon">ℹ️</span>
+        <div>
+            <strong style="display:block;margin-bottom:4px;color:#0F5132;">Alur Status Event</strong>
+            <span>Event baru dimulai sebagai <strong>Draft</strong> → publish ke <strong>Published</strong> agar tampil di Explore →
+            <strong>Completed</strong> setelah selesai (masih bisa dilihat peserta) →
+            <strong>Archived</strong> hanya terlihat admin.</span>
+        </div>
+    </div>
+
+    <!-- FORM -->
+    <form method="post"
+          enctype="multipart/form-data"
+          action="{% if is_edit %}{% url form_action event.event_id %}{% else %}{% url form_action %}{% endif %}">
+        {% csrf_token %}
+
+        <!-- ══ 1. INFORMASI DASAR ══════════════════════════════ -->
+        <div class="section-heading">📋 Informasi Dasar</div>
+
+        <div class="f-group">
+            <label class="f-label" for="id_event_name">Judul Event <span style="color:#ef4444">*</span></label>
+            <input id="id_event_name" class="f-input" name="event_name"
+                   value="{{ event.event_name|default_if_none:'' }}"
+                   placeholder="Contoh: Digital Culture Summit 2026">
+        </div>
+
+        <div class="f-group">
+            <label class="f-label" for="id_description">Deskripsi Event <span class="opt" id="req-description">(wajib untuk publish)</span></label>
+            <textarea id="id_description" class="f-textarea" name="description"
+                      placeholder="Ceritakan detail event, agenda, pembicara…">{{ event.description|default_if_none:'' }}</textarea>
+        </div>
+
+        <div class="f-row">
+            <div class="f-group">
+                <label class="f-label" for="id_location">📍 Lokasi <span class="opt" id="req-location">(wajib untuk publish)</span></label>
+                <input id="id_location" class="f-input" name="location"
+                       value="{{ event.location|default_if_none:'' }}"
+                       placeholder="Gedung / kota / online">
+            </div>
+            <div class="f-group">
+                <label class="f-label" for="id_person_in_charge">👤 Person in Charge (PIC) <span class="opt">(opsional)</span></label>
+                <input id="id_person_in_charge" class="f-input" name="person_in_charge"
+                       value="{{ event.person_in_charge|default_if_none:'' }}"
+                       placeholder="Nama PIC / tim penyelenggara">
+            </div>
+        </div>
+
+        <div class="f-row">
+            <div class="f-group">
+                <label class="f-label" for="id_event_date">📅 Tanggal Event <span class="opt" id="req-event_date">(wajib untuk publish)</span></label>
+                <input id="id_event_date" class="f-input" type="date" name="event_date"
+                       value="{{ event.event_date|date:'Y-m-d' }}">
+            </div>
+            <div class="f-group">
+                <label class="f-label" for="id_event_time">⏰ Waktu Mulai</label>
+                <input id="id_event_time" class="f-input" type="time" name="event_time"
+                       value="{{ event.event_time|time:'H:i' }}">
+            </div>
+            <div class="f-group">
+                <label class="f-label" for="id_end_time">Waktu Selesai</label>
+                <input id="id_end_time" class="f-input" type="time" name="end_time"
+                       value="{{ event.end_time|time:'H:i' }}">
+                <div class="f-hint">Event satu hari; waktu selesai harus setelah waktu mulai.</div>
+            </div>
+        </div>
+
+        <!-- ══ 2. UPLOAD GAMBAR ═══════════════════════════════ -->
+        <div class="section-heading">🖼️ Gambar Event</div>
+
+        <div class="f-group">
+            <label class="f-label" for="id_image">Upload Gambar <span class="opt" id="req-image_url">(wajib untuk publish)</span></label>
+            <input id="id_image" class="f-input" type="file" name="image" accept="image/*"
+                   onchange="previewImage(this)" data-has-existing="{% if event.image_url %}1{% else %}0{% endif %}">
+            <div class="f-hint">Format: JPG, PNG, WEBP. Rekomendasi ukuran: 1200×630 px.</div>
+            {% if event.image_url %}
+            <div class="img-preview-wrap">
+                <img id="imgPreview" class="img-preview" src="/media/{{ event.image_url }}" alt="preview">
+                <span class="img-preview-label">Gambar saat ini</span>
+            </div>
+            {% else %}
+            <div class="img-preview-wrap" id="previewContainer" style="display:none;">
+                <img id="imgPreview" class="img-preview" src="#" alt="preview">
+                <span class="img-preview-label">Preview gambar baru</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ══ 3. STATUS LIFECYCLE ════════════════════════════ -->
+        <div class="section-heading">🔄 Status Lifecycle</div>
+
+        <div class="f-group">
+            <label class="f-label">Status Event</label>
+            <div class="status-grid" id="statusGrid">
+                {% for val, label in status_choices %}
+                {% if val != 'ongoing' and val != 'completed' %}
+                <label class="status-pill s-{{ val }}" id="pill-{{ val }}">
+                    <input type="radio" name="status" value="{{ val }}"
+                           {% if event.status == val %}checked{% elif not event and val == 'draft' %}checked{% endif %}
+                           onchange="updatePills(this.value)">
+                    {% if val == 'draft' %}⬛{% elif val == 'published' %}✅{% else %}🔴{% endif %}
+                    {{ label }}
+                </label>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% if event.status == 'ongoing' or event.status == 'completed' %}
+            <div class="f-hint" style="margin-top:8px;">
+                Status saat ini: <strong>{{ event.get_status_display }}</strong> — status ini otomatis dikelola sistem
+                berdasarkan tanggal/jam event dan tidak bisa diubah manual di sini. Untuk menyembunyikan event ini
+                dari peserta, gunakan status <strong>Archived</strong>.
+            </div>
+            {% endif %}
+            <div id="publishWarning" class="f-hint" style="display:none; margin-top:8px; color:#b45309; background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 12px;">
+                ⚠️ Event <strong>tidak bisa dipublish</strong> sebelum field wajib berikut diisi:
+                <span id="publishWarningFields"></span>.
+                Capacity &amp; PIC tetap opsional. Lengkapi dulu, atau pilih status <strong>Draft</strong> untuk
+                menyimpan progres sekarang.
+            </div>
+            <div class="status-guide" style="margin-top:14px;">
+                <div class="sg-item"><div class="sg-dot" style="background:#94a3b8;"></div><div class="sg-text"><strong>Draft</strong>Tidak tampil di Explore. Hanya bisa diakses admin.</div></div>
+                <div class="sg-item"><div class="sg-dot" style="background:#22c55e;"></div><div class="sg-text"><strong>Published</strong>Tampil di Explore. Registrasi dibuka. Otomatis berubah jadi <em>Ongoing</em> saat event mulai, lalu <em>Completed</em> saat event selesai.</div></div>
+                <div class="sg-item"><div class="sg-dot" style="background:#ef4444;"></div><div class="sg-text"><strong>Archived</strong>Disembunyikan. Hanya admin yang bisa akses.</div></div>
+            </div>
+        </div>
+
+        <!-- ══ 4. KAPASITAS ═══════════════════════════════════ -->
+        <div class="section-heading">👥 Kapasitas</div>
+
+        <div class="f-group">
+            <label class="f-label" for="id_capacity">Kapasitas Peserta <span class="opt">(opsional — kosongkan = tidak terbatas)</span></label>
+            <input id="id_capacity" class="f-input" type="number" name="capacity"
+                   min="1"
+                   value="{{ event.capacity|default_if_none:'' }}"
+                   placeholder="Contoh: 100"
+                   style="max-width:220px;"
+                   oninput="updateCapacityInfo(this.value)">
+            <div class="capacity-info" id="capacityInfo" style="{% if not event.capacity %}display:none;{% endif %}max-width:320px;">
+                ℹ️ <span id="capacityText">
+                    {% if event.capacity %}
+                        Kuota {{ event.capacity }} peserta.
+                        {% if is_edit %}Terdaftar: {{ event.registered_count }} orang.{% endif %}
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- ══ 5. JADWAL REGISTRASI & ABSENSI ════════════════ -->
+        <div class="section-heading">🗓️ Jadwal Registrasi & Absensi</div>
+
+        <div class="f-group">
+            <label class="f-label" for="id_reg_deadline">📋 Registration Deadline <span class="opt" id="req-registration_deadline">(wajib untuk publish)</span></label>
+            <input id="id_reg_deadline" class="f-input" type="datetime-local" name="registration_deadline"
+                   value="{{ event.registration_deadline|date:'Y-m-d\TH:i' }}"
+                   style="max-width:320px;">
+            <div class="f-hint">Setelah waktu ini, pendaftaran otomatis ditutup.</div>
+        </div>
+
+        <div class="f-row" style="max-width:660px;">
+            <div class="f-group">
+                <label class="f-label" for="id_att_open">✅ Attendance Open Time <span class="opt" id="req-attendance_open_time">(wajib untuk publish)</span></label>
+                <input id="id_att_open" class="f-input" type="datetime-local" name="attendance_open_time"
+                       value="{{ event.attendance_open_time|date:'Y-m-d\TH:i' }}">
+            </div>
+            <div class="f-group">
+                <label class="f-label" for="id_att_close">🔒 Attendance Close Time <span class="opt" id="req-attendance_close_time">(wajib untuk publish)</span></label>
+                <input id="id_att_close" class="f-input" type="datetime-local" name="attendance_close_time"
+                       value="{{ event.attendance_close_time|date:'Y-m-d\TH:i' }}">
+            </div>
+        </div>
+        <div class="f-hint" style="margin-top:-14px; margin-bottom:20px;">
+            Peserta hanya bisa submit absensi selama window ini terbuka.
+        </div>
+
+        <!-- ══ BUTTONS ════════════════════════════════════════ -->
+        <div class="btn-row">
+            <button type="submit" class="btn-primary">
+                💾 Simpan Event
+            </button>
+            <a href="{% url 'admin_explore' %}" class="btn-secondary">Batal</a>
+        </div>
+
+    </form>
+</div>
+</div>
+
+<script>
+// ── Status pills highlight ──────────────────────────
+function updatePills(val) {
+    document.querySelectorAll('.status-pill').forEach(p => p.classList.remove('checked'));
+    const active = document.getElementById('pill-' + val);
+    if (active) active.classList.add('checked');
+    checkPublishReadiness();
+}
+// init on load
+document.querySelectorAll('input[name="status"]').forEach(r => {
+    if (r.checked) updatePills(r.value);
+    r.addEventListener('change', () => updatePills(r.value));
+});
+
+// ── Publish readiness check ─────────────────────────
+// Mirrors Event.REQUIRED_FOR_PUBLISH_FIELDS / get_missing_required_fields()
+// on the backend (models.py) so the admin sees the SAME rule here, live,
+// before submitting. Capacity & PIC are intentionally never checked.
+// This is informational only — the backend is the actual source of truth
+// and will hard-reject the save if this is somehow bypassed.
+const REQUIRED_FIELDS = [
+    { id: 'id_event_name',  key: 'event_name',  label: 'Judul Event' },
+    { id: 'id_description', key: 'description', label: 'Deskripsi Event' },
+    { id: 'id_location',    key: 'location',    label: 'Lokasi' },
+    { id: 'id_event_date',  key: 'event_date',  label: 'Tanggal Event' },
+    { id: 'id_event_time',  key: 'event_time',  label: 'Waktu Mulai' },
+    { id: 'id_end_time',    key: 'end_time',    label: 'Waktu Selesai' },
+    { id: 'id_reg_deadline', key: 'registration_deadline', label: 'Registration Deadline' },
+    { id: 'id_att_open',     key: 'attendance_open_time',  label: 'Attendance Open Time' },
+    { id: 'id_att_close',    key: 'attendance_close_time', label: 'Attendance Close Time' },
+];
+
+function getMissingFields() {
+    const missing = [];
+    REQUIRED_FIELDS.forEach(f => {
+        const el = document.getElementById(f.id);
+        if (!el || !el.value || !el.value.trim()) missing.push(f.label);
+    });
+    const imgInput = document.getElementById('id_image');
+    if (imgInput) {
+        const hasExisting = imgInput.dataset.hasExisting === '1';
+        const hasNewFile = imgInput.files && imgInput.files.length > 0;
+        if (!hasExisting && !hasNewFile) missing.push('Gambar Event');
+    }
+    return missing;
+}
+
+function checkPublishReadiness() {
+    const publishedRadio = document.querySelector('input[name="status"][value="published"]');
+    const warningBox = document.getElementById('publishWarning');
+    const warningFields = document.getElementById('publishWarningFields');
+    if (!publishedRadio || !warningBox) return;
+
+    const missing = getMissingFields();
+    const wantsPublish = publishedRadio.checked;
+
+    if (wantsPublish && missing.length > 0) {
+        warningFields.textContent = missing.join(', ');
+        warningBox.style.display = 'block';
+    } else {
+        warningBox.style.display = 'none';
+    }
+
+    // Highlight (without blocking) each still-empty required field.
+    REQUIRED_FIELDS.forEach(f => {
+        const el = document.getElementById(f.id);
+        if (!el) return;
+        const isMissing = wantsPublish && (!el.value || !el.value.trim());
+        el.style.borderColor = isMissing ? '#f59e0b' : '';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', checkPublishReadiness);
+REQUIRED_FIELDS.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (el) el.addEventListener('input', checkPublishReadiness);
+});
+const imageInputEl = document.getElementById('id_image');
+if (imageInputEl) imageInputEl.addEventListener('change', checkPublishReadiness);
+
+// Block submit client-side when Published is chosen but something
+// required is still missing — mirrors the backend's hard validation
+// (admin_add_event / admin_edit_event now reject the save outright
+// instead of silently falling back to Draft).
+const eventForm = document.querySelector('form');
+if (eventForm) {
+    eventForm.addEventListener('submit', function (e) {
+        const publishedRadio = document.querySelector('input[name="status"][value="published"]');
+        if (publishedRadio && publishedRadio.checked) {
+            const missing = getMissingFields();
+            if (missing.length > 0) {
+                e.preventDefault();
+                checkPublishReadiness();
+                const warningBox = document.getElementById('publishWarning');
+                if (warningBox) warningBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+}
+
+// ── Image preview ───────────────────────────────────
+function previewImage(input) {
+    const container = document.getElementById('previewContainer');
+    const img       = document.getElementById('imgPreview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            img.src = e.target.result;
+            if (container) container.style.display = 'flex';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+    checkPublishReadiness();
+}
+
+// ── Capacity info update ────────────────────────────
+function updateCapacityInfo(val) {
+    const box  = document.getElementById('capacityInfo');
+    const text = document.getElementById('capacityText');
+    if (!val || parseInt(val) <= 0) {
+        box.style.display = 'none';
+        return;
+    }
+    box.style.display = 'flex';
+    text.textContent = `Kuota ${val} peserta. Kosongkan field ini untuk tidak membatasi kapasitas.`;
+}
+</script>
+</body>
+</html>

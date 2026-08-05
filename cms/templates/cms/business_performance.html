@@ -1,0 +1,564 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Performance — Pegadaian</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0B1F17;
+            --forest: #0F3D2E;
+            --forest-2: #14543D;
+            --lime: #B6F500;
+            --lime-soft: #E9FFB0;
+            --bg: #F6F8F6;
+            --card: #FFFFFF;
+            --text-muted: #6B7A73;
+            --border: rgba(15,61,46,0.08);
+            --radius-lg: 28px;
+            --radius-md: 20px;
+            --radius-sm: 14px;
+            --shadow-soft: 0 8px 24px rgba(15,61,46,0.06);
+            --shadow-card: 0 14px 40px rgba(15,61,46,0.10);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+        h1, h2, h3, h5, h6, .brand-link, .navbar a, .section-heading { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        /* ================= NAVBAR ================= */
+        .navbar {
+            background-color: rgba(11,31,23,0.92);
+            backdrop-filter: blur(14px);
+            position: sticky; top: 0; z-index: 1000;
+            padding-top: 16px; padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .navbar a {
+            text-decoration: none !important;
+            color: rgba(255,255,255,0.65);
+            transition: all 0.25s ease;
+            font-weight: 500; font-size: 14.5px;
+        }
+        .navbar a:hover { color: var(--lime) !important; }
+        .brand-link { text-decoration: none !important; color: white; display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
+        .brand-logo { width: 30px; height: 30px; border-radius: 8px; background: var(--lime); padding: 4px; transition: transform 0.3s; }
+        .brand-link:hover .brand-logo { transform: rotate(8deg) scale(1.05); }
+
+        .active-link { font-weight: 600 !important; color: #fff !important; position: relative; }
+        .active-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: -8px; height: 2px; background: var(--lime); border-radius: 2px; }
+
+        .login-btn {
+            background: var(--lime); color: var(--ink) !important;
+            padding: 9px 26px; border-radius: 999px; font-weight: 700;
+            margin-left: 5px; text-align: center; font-size: 14px;
+            box-shadow: 0 6px 16px rgba(182,245,0,0.25);
+            border: none; cursor: pointer;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: all 0.2s ease;
+        }
+        .login-btn:hover { background: #C8FF33 !important; color: var(--ink) !important; transform: translateY(-2px); box-shadow: 0 10px 22px rgba(182,245,0,0.35); }
+
+        @media (max-width: 767.98px) {
+            .navbar-collapse { background-color: #0B1F17; padding: 18px 14px; border-radius: 16px; margin-top: 12px; }
+            .nav-links-container { flex-direction: column; align-items: flex-start !important; gap: 16px !important; width: 100%; }
+            .login-btn { margin-left: 0 !important; width: 100%; text-align: center; }
+            .active-link::after { display: none; }
+        }
+
+        /* ================= LOGIN MODAL ================= */
+        .login-overlay { display: none; position: fixed; inset: 0; z-index: 3000; background: rgba(11,31,23,0.6); backdrop-filter: blur(6px); align-items: center; justify-content: center; padding: 20px; }
+        .login-overlay.open { display: flex; }
+        .login-modal { background: var(--card); border-radius: var(--radius-lg); width: 100%; max-width: 460px; overflow: hidden; box-shadow: 0 32px 80px rgba(11,31,23,0.28); animation: loginIn .25s ease; }
+        @keyframes loginIn { from { opacity: 0; transform: translateY(24px) scale(0.97); } to { opacity: 1; transform: none; } }
+        .login-header { background: var(--forest); padding: 36px 36px 28px; position: relative; overflow: hidden; }
+        .login-header::before { content: ''; position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; border-radius: 50%; background: rgba(182,245,0,0.08); }
+        .login-header::after { content: ''; position: absolute; bottom: -70px; left: -30px; width: 180px; height: 180px; border-radius: 50%; background: rgba(255,255,255,0.04); }
+        .login-logo { position: relative; z-index: 1; width: 44px; height: 44px; border-radius: 12px; background: var(--lime); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+        .login-logo img { width: 28px; height: 28px; }
+        .login-header h3 { position: relative; z-index: 1; color: white; font-weight: 800; font-size: 1.35rem; margin-bottom: 6px; }
+        .login-header p { position: relative; z-index: 1; color: rgba(255,255,255,0.7); font-size: 0.875rem; margin: 0; }
+        .login-body { padding: 32px 36px 36px; }
+        .login-label { font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 6px; display: block; }
+        .login-input { width: 100%; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 14px; font-family: 'Inter', sans-serif; color: var(--ink); background: var(--bg); transition: all 0.2s; outline: none; }
+        .login-input:focus { border-color: var(--lime); background: white; box-shadow: 0 0 0 3px rgba(182,245,0,0.25); }
+        .login-submit { width: 100%; background: var(--forest); color: white; font-weight: 700; font-size: 14px; padding: 13px; border-radius: 12px; border: none; cursor: pointer; transition: all 0.2s; margin-top: 8px; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .login-submit:hover { background: var(--ink); }
+        .login-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+        .login-close-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .login-close-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+        .login-close-btn:hover { background: var(--ink); color: white; border-color: var(--ink); }
+        .login-error { background: #fff5f5; border: 1px solid #fcc; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #c0392b; margin-bottom: 16px; display: none; }
+        .login-error.show { display: block; }
+        .login-divider { text-align: center; margin: 6px 0 16px; font-size: 12px; color: var(--text-muted); }
+
+        /* ================= PAGE TITLE ================= */
+        .page-title-wrap { padding: 44px 0 8px; }
+        .page-eyebrow {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--lime-soft); color: var(--forest);
+            font-size: 12px; font-weight: 700; letter-spacing: 0.4px;
+            padding: 6px 14px; border-radius: 999px; margin-bottom: 16px;
+            border: 1px solid rgba(182,245,0,0.4);
+        }
+        .page-title { font-weight: 800; font-size: 2.3rem; letter-spacing: -0.5px; color: var(--ink); line-height: 1.15; }
+        .page-subtitle { font-size: 0.98rem; color: var(--text-muted); margin-top: 10px; max-width: 620px; line-height: 1.65; }
+
+        /* ================= HUB HERO SECTION (samain kayak Culture Performance) ================= */
+        .hero-hub {
+            background: linear-gradient(135deg, var(--forest) 0%, #1a4a38 100%);
+            border-radius: var(--radius-lg);
+            padding: 50px 40px;
+            color: white;
+            margin: 30px 0 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+        }
+        .hero-hub::before {
+            content: '';
+            position: absolute;
+            top: -100px; right: -50px;
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            background: rgba(182, 245, 0, 0.1);
+        }
+        .hero-hub-content { position: relative; z-index: 2; max-width: 600px; }
+        .hero-hub h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.5px; color: white; }
+        .hero-hub p { font-size: 1.05rem; color: rgba(255, 255, 255, 0.85); line-height: 1.6; margin-bottom: 30px; }
+        .hero-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+        .btn-hub-primary {
+            background: var(--lime); color: var(--ink);
+            padding: 12px 24px; border-radius: 999px; font-weight: 700;
+            text-decoration: none; transition: all 0.2s;
+        }
+        .btn-hub-primary:hover { background: #C8FF33; transform: translateY(-2px); color: var(--ink); }
+        .btn-hub-secondary {
+            background: rgba(255, 255, 255, 0.1); color: white;
+            padding: 12px 24px; border-radius: 999px; font-weight: 600;
+            text-decoration: none; border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s;
+        }
+        .btn-hub-secondary:hover { background: rgba(255, 255, 255, 0.2); color: white; }
+        .hero-hub-image { position: relative; z-index: 2; flex-shrink: 0; width: 35%; }
+        .hero-hub-image img {
+            width: 100%; height: auto; border-radius: var(--radius-md);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 4px solid rgba(255, 255, 255, 0.1);
+        }
+        @media (max-width: 900px) {
+            .hero-hub { flex-direction: column; padding: 40px 24px; }
+            .hero-hub-image { width: 100%; margin-top: 20px; }
+        }
+
+        /* ================= METRIC BENTO ================= */
+        .metric-bento { margin: 32px 0 50px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        @media (max-width: 900px) { .metric-bento { grid-template-columns: repeat(2, 1fr); } }
+        .metric-cell {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md);
+            padding: 22px 22px 20px; box-shadow: var(--shadow-soft);
+            transition: all 0.25s ease; position: relative; overflow: hidden;
+        }
+        .metric-cell:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); border-color: rgba(182,245,0,0.4); }
+        .metric-cell .m-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--lime-soft); color: var(--forest); display: flex; align-items: center; justify-content: center; font-size: 15px; margin-bottom: 14px; }
+        .metric-cell .m-value { font-size: 26px; font-weight: 800; letter-spacing: -0.4px; }
+        .metric-cell .m-label { color: var(--text-muted); font-size: 12.5px; margin-top: 3px; font-weight: 500; }
+
+        /* ---- Featured "Produk Dipantau" cell — gold treatment, sebab produknya literally Emas ---- */
+        .metric-cell--gold {
+            background: linear-gradient(135deg, #142E22 0%, #0F3D2E 55%, #1B4A34 100%);
+            border-color: rgba(212, 175, 55, 0.35);
+        }
+        .metric-cell--gold::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(115deg, transparent 30%, rgba(244, 216, 117, 0.16) 45%, transparent 60%);
+            background-size: 220% 100%;
+            animation: goldShine 3.6s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes goldShine {
+            0% { background-position: 220% 0; }
+            55%, 100% { background-position: -60% 0; }
+        }
+        .metric-cell--gold .m-icon {
+            background: linear-gradient(135deg, #F4D875, #C9A227);
+            color: #3D2F05;
+            box-shadow: 0 4px 14px rgba(201, 162, 39, 0.4);
+            position: relative; z-index: 1;
+        }
+        .metric-cell--gold .m-value {
+            color: #F4D875;
+            text-shadow: 0 0 18px rgba(244, 216, 117, 0.3);
+            display: flex; align-items: center; gap: 8px;
+            position: relative; z-index: 1;
+        }
+        .metric-cell--gold .m-label {
+            display: inline-flex; align-items: center;
+            position: relative; z-index: 1;
+            margin-top: 8px; font-size: 10.5px; font-weight: 800;
+            letter-spacing: 0.4px; text-transform: uppercase;
+            color: #F4D875; background: rgba(244, 216, 117, 0.14);
+            border: 1px solid rgba(244, 216, 117, 0.35);
+            padding: 4px 11px; border-radius: 999px;
+        }
+
+        /* ================= SECTION HEADING ================= */
+        .section-heading { display: flex; align-items: center; gap: 12px; margin: 8px 0 22px; }
+        .section-heading h5 { font-size: 1.2rem; font-weight: 800; margin: 0; color: var(--ink); letter-spacing: -0.2px; display: flex; align-items: center; gap: 10px; }
+        .section-heading h5::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--lime); }
+        .section-line { flex: 1; height: 1px; background: var(--border); }
+
+        /* ================= DASHBOARD CARDS (BENTO GRID) ================= */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 8px; }
+        @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+        .dashboard-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md);
+            overflow: hidden; box-shadow: var(--shadow-soft);
+            transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+            position: relative;
+        }
+        .dashboard-card::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+            background: linear-gradient(180deg, var(--lime), var(--forest-2));
+            opacity: 0; transition: opacity 0.25s ease;
+        }
+        .dashboard-card:hover { box-shadow: var(--shadow-card); border-color: rgba(182,245,0,0.4); transform: translateY(-2px); }
+        .dashboard-card:hover::before { opacity: 1; }
+        .dashboard-card-header { padding: 18px 22px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+        .dashboard-card-header h6 { font-weight: 700; font-size: 13.5px; margin: 0; color: var(--ink); line-height: 1.4; }
+        .dashboard-badge {
+            flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px;
+            font-size: 10.5px; font-weight: 700; letter-spacing: 0.3px;
+            background: var(--lime-soft); color: var(--forest);
+            border: 1px solid rgba(182,245,0,0.4);
+            border-radius: 999px; padding: 4px 11px 4px 9px;
+        }
+        .dashboard-badge .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--forest); animation: pulse 1.6s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .dashboard-card iframe { width: 100%; display: block; border: none; height: 320px; background: var(--bg); }
+
+        /* ================= QUICK ACCESS BENTO ================= */
+        .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        @media (max-width: 900px) { .quick-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .quick-grid { grid-template-columns: 1fr; } }
+
+        .quick-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md);
+            padding: 22px 20px; text-decoration: none; color: var(--ink);
+            display: flex; align-items: center; gap: 14px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+            position: relative; overflow: hidden; height: 100%;
+        }
+        .quick-card::before {
+            content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 3px;
+            background: linear-gradient(180deg, var(--lime), var(--forest-2));
+            opacity: 0; transition: opacity 0.25s ease;
+        }
+        .quick-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-card); border-color: rgba(182,245,0,0.4); color: var(--ink); }
+        .quick-card:hover::before { opacity: 1; }
+        .quick-icon { width: 42px; height: 42px; background: var(--lime-soft); color: var(--forest); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .quick-label { font-weight: 700; font-size: 13.5px; line-height: 1.4; }
+        .quick-arrow { margin-left: auto; color: var(--text-muted); font-size: 16px; flex-shrink: 0; transition: all 0.2s ease; }
+        .quick-card:hover .quick-arrow { color: var(--forest); transform: translate(2px, -2px); }
+
+        /* ================= FOOTER ================= */
+        .footer-custom { background: var(--ink); color: rgba(255,255,255,0.65); padding: 50px 0 34px; margin-top: 90px; font-size: 14px; border-top: 1px solid rgba(182,245,0,0.1); }
+        .footer-custom p.fw-semibold { color: white; }
+        .footer-custom a { color: var(--lime); text-decoration: none; font-weight: 600; }
+        .footer-custom small { color: rgba(255,255,255,0.4); }
+
+        /* ================= CHAT / FEEDBACK BTN ================= */
+        .feedback-btn {
+            position: fixed; bottom: 24px; right: 24px;
+            background-color: var(--lime); color: var(--ink);
+            width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; text-decoration: none; font-size: 20px;
+            box-shadow: 0 8px 22px rgba(182,245,0,0.4);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .feedback-btn:hover { transform: scale(1.1) rotate(8deg); background-color: #C8FF33; color: var(--ink); }
+
+        /* ================= REVEAL ================= */
+        .reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
+        .reveal.in { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-md navbar-dark">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand brand-link" href="{% url 'home' %}">
+            <img class="brand-logo" src="{% static 'cms/pegadaian_logo.png' %}" alt="Logo">
+            <span>Digital Culture</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="d-flex align-items-center ms-auto gap-3 nav-links-container">
+                <a href="/" class="{% if request.path == '/' %}active-link{% endif %}">Home</a>
+                <a href="/explore/" class="{% if request.path == '/explore/' %}active-link{% endif %}">Explore</a>
+                <a href="/culture_performance/" class="{% if request.path == '/culture_performance/' %}active-link{% endif %}">Culture</a>
+                <a href="/business_performance/" class="{% if request.path == '/business_performance/' %}active-link{% endif %}">Business</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- HERO SECTION -->
+    <div class="hero-hub reveal">
+        <div class="hero-hub-content">
+            <h1>Pegadaian Business Performance</h1>
+            <p>Pantau pencapaian, performa operasional, serta indikator strategis perusahaan Pegadaian secara
+                menyeluruh — dari dashboard utama hingga akses cepat ke seluruh laporan kinerja bisnis.</p>
+            <div class="hero-buttons">
+                <a href="#dashboard-section" class="btn-hub-primary">Lihat Dashboard</a>
+                <a href="#quick-access" class="btn-hub-secondary">Quick Access</a>
+            </div>
+        </div>
+        <div class="hero-hub-image">
+            <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                alt="Business Performance Hub">
+        </div>
+    </div>
+
+    <!-- METRIC BENTO -->
+    <div class="metric-bento reveal">
+        <div class="metric-cell">
+            <div class="m-icon">📡</div>
+            <div class="m-value">4</div>
+            <div class="m-label">Dashboard utama live</div>
+        </div>
+        <div class="metric-cell">
+            <div class="m-icon">⚡</div>
+            <div class="m-value">5</div>
+            <div class="m-label">Quick access tools</div>
+        </div>
+        <div class="metric-cell metric-cell--gold">
+            <div class="m-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="8" width="20" height="10" rx="2" fill="currentColor"/>
+                    <rect x="2" y="8" width="20" height="10" rx="2" stroke="#7A5E12" stroke-width="0.6"/>
+                    <path d="M5 8 L8 4 H16 L19 8" stroke="#7A5E12" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="m-value">Emas</div>
+            <div class="m-label">Produk Unggulan</div>
+        </div>
+        <div class="metric-cell">
+            <div class="m-icon">🎯</div>
+            <div class="m-value">KPI</div>
+            <div class="m-label">Korporat terpadu</div>
+        </div>
+    </div>
+
+    <!-- DASHBOARDS -->
+    <div class="section-heading reveal" id="dashboard-section">
+        <h5>Dashboard Utama</h5>
+        <div class="section-line"></div>
+    </div>
+
+    <div class="dashboard-grid">
+
+        <div class="dashboard-card reveal">
+            <div class="dashboard-card-header">
+                <h6>Dashboard Pegadaian Digital — Pencapaian Kanwil</h6>
+                <span class="dashboard-badge"><span class="pulse-dot"></span>Live</span>
+            </div>
+            <iframe src=""></iframe>
+        </div>
+
+        <div class="dashboard-card reveal">
+            <div class="dashboard-card-header">
+                <h6>Dashboard Micro Risk Assessment</h6>
+                <span class="dashboard-badge"><span class="pulse-dot"></span>Live</span>
+            </div>
+            <iframe src="https://lookerstudio.google.com/embed/reporting/YOUR_REPORT_ID_2"></iframe>
+        </div>
+
+        <div class="dashboard-card reveal">
+            <div class="dashboard-card-header">
+                <h6>Dashboard KUR Syariah</h6>
+                <span class="dashboard-badge"><span class="pulse-dot"></span>Live</span>
+            </div>
+            <iframe src="https://lookerstudio.google.com/embed/reporting/YOUR_REPORT_ID_3"></iframe>
+        </div>
+
+        <div class="dashboard-card reveal">
+            <div class="dashboard-card-header">
+                <h6>Dashboard Data Quality</h6>
+                <span class="dashboard-badge"><span class="pulse-dot"></span>Live</span>
+            </div>
+            <iframe src="https://lookerstudio.google.com/embed/reporting/YOUR_REPORT_ID_4"></iframe>
+        </div>
+
+    </div>
+
+    <!-- QUICK ACCESS -->
+    <div class="section-heading reveal" id="quick-access" style="margin-top: 50px;">
+        <h5>Quick Access</h5>
+        <div class="section-line"></div>
+    </div>
+
+    <div class="quick-grid reveal" style="margin-bottom: 60px;">
+        <a href="https://lookerstudio.google.com/reporting/ID1" target="_blank" class="quick-card">
+            <div class="quick-icon">📋</div>
+            <div class="quick-label">Data Consent</div>
+            <div class="quick-arrow">↗</div>
+        </a>
+        <a href="https://lookerstudio.google.com/reporting/ID2" target="_blank" class="quick-card">
+            <div class="quick-icon">🥇</div>
+            <div class="quick-label">Kinerja Produk Emas</div>
+            <div class="quick-arrow">↗</div>
+        </a>
+        <a href="https://lookerstudio.google.com/reporting/ID3" target="_blank" class="quick-card">
+            <div class="quick-icon">🎯</div>
+            <div class="quick-label">KPI Korporat</div>
+            <div class="quick-arrow">↗</div>
+        </a>
+        <a href="https://lookerstudio.google.com/reporting/ID4" target="_blank" class="quick-card">
+            <div class="quick-icon">🏦</div>
+            <div class="quick-label">Rekening Simpedes UMI</div>
+            <div class="quick-arrow">↗</div>
+        </a>
+        <a href="https://lookerstudio.google.com/reporting/ID5" target="_blank" class="quick-card">
+            <div class="quick-icon">📱</div>
+            <div class="quick-label">Self Experience Pegadaian Digital</div>
+            <div class="quick-arrow">↗</div>
+        </a>
+    </div>
+
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="login-overlay" id="loginOverlay">
+    <div class="login-modal">
+
+        <div class="login-header">
+            <div class="login-logo">
+                <img src="{% static 'cms/pegadaian_logo.png' %}" alt="Logo">
+            </div>
+            <h3>Selamat Datang Kembali</h3>
+            <p>Masuk ke Dashboard Digital Culture Pegadaian</p>
+        </div>
+
+        <div class="login-body">
+            <div class="login-close-row">
+                <div style="font-size: 13px; color: var(--text-muted);">Masukkan kredensial Anda</div>
+                <button class="login-close-btn" onclick="closeLoginModal()" aria-label="Tutup">✕</button>
+            </div>
+
+            <div class="login-error" id="loginError">Username atau password salah. Silakan coba lagi.</div>
+
+            <form id="loginForm" method="POST" action="{% url 'admin_login' %}" novalidate>
+                {% csrf_token %}
+                <div style="margin-bottom: 16px;">
+                    <label class="login-label" for="login-username">Username</label>
+                    <input type="text" id="login-username" name="username" class="login-input"
+                        placeholder="Masukkan username Anda" required autocomplete="username">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label class="login-label" for="login-password">Password</label>
+                    <input type="password" id="login-password" name="password" class="login-input"
+                        placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="login-submit" id="loginSubmitBtn">Masuk ke Dashboard</button>
+            </form>
+
+            <div class="login-divider" style="margin-top: 20px;">
+                Butuh bantuan? Hubungi <a href="mailto:budaya.kerja.pusat@pegadaian.co.id"
+                    style="color: var(--forest); font-weight: 600; text-decoration: none;">tim IT</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% include 'cms/footer_contact.html' %}
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach((e, i) => {
+            if (e.isIntersecting) setTimeout(() => e.target.classList.add('in'), i * 80);
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // LOGIN MODAL
+    window.openLoginModal = function () {
+        document.getElementById("loginOverlay").classList.add("open");
+        document.body.style.overflow = "hidden";
+    };
+    window.closeLoginModal = function () {
+        document.getElementById("loginOverlay").classList.remove("open");
+        document.body.style.overflow = "";
+    };
+    document.getElementById("loginOverlay").addEventListener("click", function (e) {
+        if (e.target === this) closeLoginModal();
+    });
+
+    // Handle login form — submit via fetch, redirect on success, show error on failure
+    document.getElementById("loginForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const btn = document.getElementById("loginSubmitBtn");
+        const errorEl = document.getElementById("loginError");
+        btn.disabled = true;
+        btn.textContent = "Memproses...";
+        errorEl.classList.remove("show");
+
+        try {
+            const res = await fetch(this.action, {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": this.querySelector("[name=csrfmiddlewaretoken]").value
+                },
+                body: new FormData(this),
+                redirect: "manual"
+            });
+
+            if (res.type === "opaqueredirect" || res.redirected || res.status === 302 || res.status === 200) {
+                let data = null;
+                try { data = await res.json(); } catch (_) {}
+
+                if (data && data.error) {
+                    errorEl.classList.add("show");
+                } else if (data && data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    window.location.href = "/admin-home/";
+                }
+            } else {
+                errorEl.classList.add("show");
+            }
+        } catch (err) {
+            window.location.href = "/admin-home/";
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "Masuk ke Dashboard";
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,536 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore Admin · Digital Culture</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+       :root {
+            --ink: #0B1F17;
+            --forest: #0F3D2E;
+            --forest-2: #14543D;
+            --lime: #B6F500;
+            --lime-soft: #E9FFB0;
+            --bg: #F6F8F6;
+            --card: #FFFFFF;
+            --text-muted: #6B7A73;
+            --border: rgba(15,61,46,0.08);
+            --radius-lg: 28px;
+            --radius-md: 20px;
+            --radius-sm: 14px;
+            --shadow-soft: 0 8px 24px rgba(15,61,46,0.06);
+            --shadow-card: 0 14px 40px rgba(15,61,46,0.10);
+
+            /* status semantics — distinct from brand accent so states stay legible */
+            --status-draft-bg: #E7ECE9; --status-draft-fg: #4B5A54;
+            --status-published-bg: var(--lime-soft); --status-published-fg: var(--forest);
+            --status-ongoing-bg: #E1F0F8; --status-ongoing-fg: #1D6FA5;
+            --status-completed-bg: #FCEFD1; --status-completed-fg: #9A6300;
+            --status-archived-bg: #FBE3E0; --status-archived-fg: #B33F31;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--ink); min-height: 100vh; }
+        h1, h2, .logo, .item-title, .hero h1 { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        /* ============ NAVBAR (shared with admin.html) ============ */
+        .navbar { background: var(--forest); display: flex; justify-content: space-between; align-items: center; padding: 14px 40px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 24px rgba(11,31,23,0.18); }
+        .logo { color: #fff; font-weight: 800; font-size: 16.5px; letter-spacing: -0.2px; text-decoration: none; display: flex; align-items: center; gap: 9px; }
+        .logo-mark { width: 26px; height: 26px; border-radius: 8px; background: var(--lime); display: inline-flex; align-items: center; justify-content: center; color: var(--ink); font-size: 13px; font-weight: 800; }
+        .nav-links { display: flex; align-items: center; gap: 2px; background: rgba(255,255,255,0.07); padding: 5px; border-radius: 999px; }
+        .nav-links a { color: rgba(255,255,255,0.72); text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: 999px; transition: all 0.2s ease; white-space: nowrap; }
+        .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.08); }
+        .nav-links a.active { color: var(--ink); background: var(--lime); }
+        .nav-logout { margin-left: 10px !important; background: rgba(239,68,68,0.16) !important; color: #FFD3D3 !important; }
+        .nav-logout:hover { background: #ef4444 !important; color: #fff !important; }
+        @media (max-width: 900px) {
+            .navbar { flex-direction: column; gap: 12px; padding: 16px 20px; align-items: stretch; }
+            .logo { justify-content: center; }
+            .nav-links { width: 100%; justify-content: center; flex-wrap: wrap; }
+            .nav-links a { font-size: 12.5px; padding: 7px 12px; }
+        }
+
+        /* ============ CONTAINER / HERO ============ */
+        .container { width: min(1320px, 92%); margin: 32px auto; padding-bottom: 40px; }
+        .hero {
+            background: radial-gradient(120% 160% at 100% 0%, #1B5C42 0%, var(--forest) 45%, var(--ink) 100%);
+            padding: 34px 38px; border-radius: var(--radius-lg); margin-bottom: 26px;
+            box-shadow: var(--shadow-card); position: relative; overflow: hidden;
+        }
+        .hero::after { content: ''; position: absolute; top: -70px; right: -60px; width: 220px; height: 220px; border-radius: 50%; background: rgba(182,245,0,0.08); }
+        .hero h1 { font-size: 25px; color: #fff; font-weight: 800; letter-spacing: -0.4px; position: relative; z-index: 1; }
+        .hero p { font-size: 13.5px; margin-top: 6px; color: rgba(255,255,255,0.72); max-width: 560px; position: relative; z-index: 1; }
+
+        /* ============ HEADER ACTION BAR ============ */
+        .add-wrapper { margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+        .tabs { display: flex; gap: 6px; background: var(--card); padding: 5px; border-radius: 999px; border: 1px solid var(--border); box-shadow: var(--shadow-soft); }
+        .tab-btn { padding: 9px 20px; border: none; background: transparent; border-radius: 999px; cursor: pointer; font-weight: 700; font-size: 13.5px; color: var(--text-muted); transition: all 0.2s ease; font-family: 'Inter', sans-serif; }
+        .tab-btn:hover { color: var(--ink); }
+        .tab-btn.active { background: var(--lime); color: var(--ink); }
+
+        .search-input { padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); width: 300px; outline: none; font-size: 13.5px; color: var(--ink); transition: border-color 0.2s ease; }
+        .search-input:focus { border-color: var(--lime); box-shadow: 0 0 0 3px rgba(182,245,0,0.18); }
+
+        /* ============ LIST CONTAINER ============ */
+        .content-list { background: var(--card); border-radius: var(--radius-md); border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow-soft); }
+
+        .list-item { display: flex; align-items: flex-start; gap: 22px; padding: 18px 20px; border-bottom: 1px solid var(--border); transition: background 0.2s ease; }
+        .list-item:hover { background: var(--bg); }
+        .list-item:last-child { border-bottom: none; }
+
+        .item-left { display: flex; gap: 16px; width: 340px; flex-shrink: 0; }
+        .item-thumb { width: 90px; height: 64px; object-fit: cover; border-radius: 10px; background: var(--bg); flex-shrink: 0; }
+        .item-info { display: flex; flex-direction: column; gap: 6px; padding-top: 2px; }
+        .item-title { font-weight: 700; font-size: 14.5px; color: var(--ink); line-height: 1.35; }
+
+        .item-middle { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding-top: 2px; }
+        .meta-text { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); font-weight: 500; }
+        .meta-text svg { flex-shrink: 0; }
+
+        /* ============ ACTIONS ============ */
+        .actions { display: flex; gap: 8px; flex-shrink: 0; flex-direction: column; width: 140px; }
+        .actions a, .actions button { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; border-radius: 9px; font-weight: 700; font-size: 12.5px; text-decoration: none; border: 1px solid transparent; cursor: pointer; transition: all 0.2s ease; width: 100%; font-family: 'Inter', sans-serif; }
+        .actions form { width: 100%; }
+
+        .actions-grid-2x2 { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; width: 220px !important; align-items: start; }
+        .actions-grid-2x2 form { width: 100%; margin: 0; }
+
+        .btn-edit { background: var(--card); color: var(--text-muted); border: 1px solid var(--border); }
+        .btn-edit:hover { background: var(--bg); color: var(--ink); }
+
+        .btn-preview { background: var(--forest); color: #fff; }
+        .btn-preview:hover { background: var(--ink); }
+
+        .btn-complete-yellow { background: var(--status-completed-bg); color: var(--status-completed-fg); border: 1px solid rgba(154,99,0,0.18); }
+        .btn-complete-yellow:hover { background: #F8E2AA; }
+
+        .btn-publish { background: var(--lime-soft); color: var(--forest); border: 1px solid rgba(15,61,46,0.12); }
+        .btn-publish:hover { background: var(--lime); }
+
+        .btn-delete { background: #FBE3E0; color: #B33F31; }
+        .btn-delete:hover { background: #F6CFC9; }
+
+        .btn-archive { background: #FBE3E0; color: #B33F31; }
+        .btn-archive:hover { background: #F6CFC9; }
+
+        /* ============ ADD BUTTON ============ */
+        .btn-add { background: var(--lime); color: var(--ink); padding: 10px 18px; border-radius: 12px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 700; transition: background 0.2s ease; }
+        .btn-add:hover { background: #C8FF33; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .empty-state { padding: 34px; text-align: center; color: var(--text-muted); font-size: 13.5px; }
+
+        /* ============ SECTION HEADINGS ============ */
+        .section-heading { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 12px; padding-left: 12px; border-left: 4px solid var(--forest); display: flex; align-items: center; }
+        .section-heading svg { margin-right: 6px; vertical-align: middle; }
+        .section-heading .heading-note { font-size: 12px; font-weight: 500; color: var(--text-muted); margin-left: 8px; }
+
+        .inactive-item { opacity: 0.75; background: rgba(246,248,246,0.5); }
+        .inactive-item:hover { opacity: 1; background: var(--bg); }
+
+        /* ============ STATUS BADGES ============ */
+        .status-badge { display: inline-block; padding: 3px 11px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+        .status-badge.status-draft { background: var(--status-draft-bg); color: var(--status-draft-fg); }
+        .status-badge.status-published { background: var(--status-published-bg); color: var(--status-published-fg); }
+        .status-badge.status-ongoing { background: var(--status-ongoing-bg); color: var(--status-ongoing-fg); }
+        .status-badge.status-completed { background: var(--status-completed-bg); color: var(--status-completed-fg); }
+        .status-badge.status-archived { background: var(--status-archived-bg); color: var(--status-archived-fg); }
+
+        .section-heading.status-draft { border-left-color: #94a0a3; }
+        .section-heading.status-published { border-left-color: var(--forest); }
+        .section-heading.status-ongoing { border-left-color: #1D6FA5; }
+        .section-heading.status-completed { border-left-color: #9A6300; }
+        .section-heading.status-archived { border-left-color: #B33F31; margin-top: 34px; }
+
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 900px) {
+            .list-item { flex-direction: column; align-items: stretch; gap: 16px; }
+            .item-left { width: 100%; }
+            .actions { width: 100%; flex-direction: row; flex-wrap: wrap; }
+            .actions a, .actions button, .actions form { flex: 1; }
+            .actions.actions-grid-2x2 { display: grid !important; grid-template-columns: 1fr; width: 100% !important; }
+        }
+        @media (max-width: 768px) {
+            .container { width: 95%; margin: 16px auto 24px; }
+            .hero { padding: 24px 20px; }
+            .hero h1 { font-size: 20px; }
+            .add-wrapper { flex-direction: column; align-items: stretch; gap: 12px; }
+            .tabs { flex-wrap: wrap; gap: 6px; }
+            .tab-btn { padding: 8px 14px; font-size: 13px; }
+            .search-input { width: 100%; }
+            .list-item { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px; }
+            .item-thumb { width: 100%; height: 140px; }
+            .actions { width: 100%; flex-wrap: wrap; justify-content: flex-start; }
+            .actions a, .actions button { width: auto; padding: 7px 12px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <a href="{% url 'home' %}" class="logo"><span class="logo-mark">DC</span>Digital Culture</a>
+        <div class="nav-links">
+            <a href="/admin-home/" class="{% if request.path == '/admin-home/' %}active{% endif %}">Control</a>
+            <a href="/admin-explore/" class="{% if request.path == '/admin-explore/' %}active{% endif %}">Explore</a>
+            <a href="/admin-attendance/" class="{% if request.path == '/admin-attendance/' %}active{% endif %}">Attendance</a>
+            <a href="/admin-feedback/" class="{% if request.path == '/admin-feedback/' %}active{% endif %}">Feedback</a>
+            <a href="{% url 'admin_logout' %}" class="nav-logout">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- HERO -->
+        <div class="hero">
+            <h1>Explore Content Management</h1>
+            <p>Halaman ini menampilkan seluruh konten explore (Events, News, Attributes) yang dapat dikelola.</p>
+        </div>
+
+        <!-- HEADER ACTION BAR -->
+        <div class="add-wrapper">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showTab('events')">Events</button>
+                <button class="tab-btn" onclick="showTab('news')">News</button>
+                <button class="tab-btn" onclick="showTab('attributes')">Attributes</button>
+            </div>
+            <input type="text" id="searchInput" class="search-input" placeholder="Cari konten..."
+                onkeyup="filterItems()">
+        </div>
+
+        <!-- EVENTS TAB -->
+        <div id="events" class="tab-content active">
+            <div style="text-align: right; margin-bottom: 20px;">
+                <a href="{% url 'admin_add_event' %}" class="btn-add">+ Tambah Event</a>
+            </div>
+
+            {% if not events|length %}
+            <div class="empty-state">Tidak ada event untuk ditampilkan.</div>
+            {% endif %}
+
+            <!-- PUBLISHED EVENTS -->
+            <div class="section-heading status-published"><svg width="18" height="18" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>Published Events</div>
+            <div class="content-list" id="list-published-events" style="margin-bottom: 30px;">
+                {% for event in events %}{% if event.status == 'published' %}
+                <div class="list-item" data-search="{{ event.event_name|lower }}">
+                    <div class="item-left">
+                        <img src="{% if event.image_url %}/media/{{ event.image_url }}{% else %}https://picsum.photos/400/300?random={{ event.event_id }}{% endif %}" class="item-thumb" onerror="this.src='https://picsum.photos/400/300?random={{ event.event_id }}'">
+                        <div class="item-info">
+                            <div class="item-title">{{ event.event_name }}</div>
+                            <span class="meta-text"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> {{ event.event_date|date:'j M Y' }}</span>
+                            <span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> {{ event.registrant_count|default:'0' }}{% if event.capacity %} / {{ event.capacity }}{% endif %} peserta</span>
+                        </div>
+                    </div>
+                    <div class="item-middle">
+                        <span class="status-badge status-published">Published</span>
+                        <span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> {{ event.views|default:'0' }} views</span>
+                        {% if event.registration_deadline %}<span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg> Deadline {{ event.registration_deadline|date:'j M H:i' }}</span>{% endif %}
+                        {% if event.person_in_charge %}<span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> {{ event.person_in_charge }}</span>{% endif %}
+                        {% if event.is_attendance_open %}<span class="meta-text" style="color:var(--forest);font-weight:700;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Absensi Terbuka</span>{% endif %}
+                    </div>
+                    <div class="actions">
+                        <a href="{% url 'admin_edit_event' event.event_id %}" class="btn-edit">Edit</a>
+                        <a href="{% url 'admin_event_preview' event.event_id %}" class="btn-preview">Preview</a>
+                        <form method="post" action="{% url 'admin_delete_event' event.event_id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-delete" onclick="return confirm('Hapus event ini?')">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}{% endfor %}
+            </div>
+
+            <!-- ONGOING EVENTS -->
+            <div class="section-heading status-ongoing"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 16 16 12 12 8"></polyline>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>Ongoing Events</div>
+            <div class="content-list" id="list-ongoing-events" style="margin-bottom: 30px;">
+                {% for event in events %}{% if event.status == 'ongoing' %}
+                <div class="list-item" data-search="{{ event.event_name|lower }}">
+                    <div class="item-left">
+                        <img src="{% if event.image_url %}/media/{{ event.image_url }}{% else %}https://picsum.photos/400/300?random={{ event.event_id }}{% endif %}" class="item-thumb" onerror="this.src='https://picsum.photos/400/300?random={{ event.event_id }}'">
+                        <div class="item-info">
+                            <div class="item-title">{{ event.event_name }}</div>
+                            <span class="meta-text"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> {{ event.event_date|date:'j M Y' }}</span>
+                            <span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> {{ event.registrant_count|default:'0' }}{% if event.capacity %} / {{ event.capacity }}{% endif %} peserta</span>
+                        </div>
+                    </div>
+                    <div class="item-middle">
+                        <span class="status-badge status-ongoing">Ongoing</span>
+                        <span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> {{ event.views|default:'0' }} views</span>
+                        {% if event.registration_deadline %}<span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg> Deadline {{ event.registration_deadline|date:'j M H:i' }}</span>{% endif %}
+                        {% if event.person_in_charge %}<span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> {{ event.person_in_charge }}</span>{% endif %}
+                        {% if event.is_attendance_open %}<span class="meta-text" style="color:var(--forest);font-weight:700;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Absensi Terbuka</span>{% elif event.attendance_open_time %}<span class="meta-text" style="color:var(--text-muted);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Absensi Belum Buka</span>{% endif %}
+                    </div>
+                    <div class="actions">
+                        <a href="{% url 'admin_edit_event' event.event_id %}" class="btn-edit">Edit</a>
+                        <a href="{% url 'admin_event_preview' event.event_id %}" class="btn-preview">Preview</a>
+                        <form method="post" action="{% url 'admin_delete_event' event.event_id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-delete" onclick="return confirm('Hapus event ini?')">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}{% endfor %}
+            </div>
+
+            <!-- DRAFT EVENTS -->
+            <div class="section-heading status-draft"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>Draft Events</div>
+            <div class="content-list" id="list-draft-events" style="margin-bottom: 30px;">
+                {% for event in events %}{% if event.status == 'draft' %}
+                <div class="list-item inactive-item" data-search="{{ event.event_name|lower }}">
+                    <div class="item-left">
+                        <img src="{% if event.image_url %}/media/{{ event.image_url }}{% else %}https://picsum.photos/400/300?random={{ event.event_id }}{% endif %}" class="item-thumb" onerror="this.src='https://picsum.photos/400/300?random={{ event.event_id }}'">
+                        <div class="item-info">
+                            <div class="item-title">{{ event.event_name }}</div>
+                            <span class="meta-text"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> {{ event.event_date|date:'j M Y' }}</span>
+                            <span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> {% if event.capacity %}Kapasitas {{ event.capacity }}{% else %}Kapasitas belum diatur{% endif %}</span>
+                        </div>
+                    </div>
+                    <div class="item-middle">
+                        <span class="status-badge status-draft">Draft</span>
+                        <span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> {{ event.views|default:'0' }} views</span>
+                        {% if event.registration_deadline %}<span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg> Deadline {{ event.registration_deadline|date:'j M H:i' }}</span>{% endif %}
+                        {% if event.person_in_charge %}<span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> {{ event.person_in_charge }}</span>{% endif %}
+                        <span class="meta-text" style="color:#9A6300;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Tidak tampil di Explore</span>
+                    </div>
+                    <div class="actions">
+                        <a href="{% url 'admin_edit_event' event.event_id %}" class="btn-edit">Edit</a>
+                        <a href="{% url 'admin_event_preview' event.event_id %}" class="btn-preview">Preview</a>
+                        <form method="post" action="{% url 'admin_change_event_status' event.event_id %}" style="display:inline">
+                            {% csrf_token %}<input type="hidden" name="status" value="published">
+                            <button type="submit" class="btn-publish" onclick="return confirm('Publish event ini?')">Publish</button>
+                        </form>
+                        <form method="post" action="{% url 'admin_delete_event' event.event_id %}" style="display:inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-delete" onclick="return confirm('Hapus event ini?')">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}{% endfor %}
+            </div>
+
+            <!-- COMPLETED EVENTS -->
+            <div class="section-heading status-completed"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                    <line x1="4" y1="22" x2="4" y2="15"></line>
+                </svg>Completed Events</div>
+            <div class="content-list" id="list-completed-events" style="margin-bottom: 30px;">
+                {% for event in events %}{% if event.status == 'completed' %}
+                <div class="list-item inactive-item" data-search="{{ event.event_name|lower }}">
+                    <div class="item-left">
+                        <img src="{% if event.image_url %}/media/{{ event.image_url }}{% else %}https://picsum.photos/400/300?random={{ event.event_id }}{% endif %}" class="item-thumb" onerror="this.src='https://picsum.photos/400/300?random={{ event.event_id }}'">
+                        <div class="item-info">
+                            <div class="item-title">{{ event.event_name }}</div>
+                            <span class="meta-text"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> {{ event.event_date|date:'j M Y' }}</span>
+                            <span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> {{ event.registrant_count|default:'0' }} peserta</span>
+                        </div>
+                    </div>
+                    <div class="item-middle">
+                        <span class="status-badge status-completed">Completed</span>
+                        <span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> {{ event.views|default:'0' }} views</span>
+                        {% if event.person_in_charge %}<span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> {{ event.person_in_charge }}</span>{% endif %}
+                        <span class="meta-text" style="color:#9A6300;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Masih bisa dilihat peserta</span>
+                    </div>
+                    <div class="actions">
+                        <a href="{% url 'admin_edit_event' event.event_id %}" class="btn-edit">Edit</a>
+                        <a href="{% url 'admin_event_preview' event.event_id %}" class="btn-preview">Preview</a>
+                        <form method="post" action="{% url 'admin_change_event_status' event.event_id %}" style="display:inline">
+                            {% csrf_token %}<input type="hidden" name="status" value="archived">
+                            <button type="submit" class="btn-archive" onclick="return confirm('Archive event ini?')">Archive</button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}{% endfor %}
+            </div>
+
+            <!-- ARCHIVED EVENTS -->
+            <div class="section-heading status-archived"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                    <rect x="1" y="3" width="22" height="5"></rect>
+                    <line x1="10" y1="12" x2="14" y2="12"></line>
+                </svg>Archived Events <span class="heading-note">(hanya terlihat oleh admin)</span></div>
+            <div class="content-list" id="list-archived-events">
+                {% for event in events %}{% if event.status == 'archived' %}
+                <div class="list-item inactive-item" data-search="{{ event.event_name|lower }}">
+                    <div class="item-left">
+                        <img src="{% if event.image_url %}/media/{{ event.image_url }}{% else %}https://picsum.photos/400/300?random={{ event.event_id }}{% endif %}" class="item-thumb" onerror="this.src='https://picsum.photos/400/300?random={{ event.event_id }}'">
+                        <div class="item-info">
+                            <div class="item-title">{{ event.event_name }}</div>
+                            <span class="meta-text"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> {{ event.event_date|date:'j M Y' }}</span>
+                        </div>
+                    </div>
+                    <div class="item-middle">
+                        <span class="status-badge status-archived">Archived</span>
+                        <span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> {{ event.views|default:'0' }} views</span>
+                        {% if event.person_in_charge %}<span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> {{ event.person_in_charge }}</span>{% endif %}
+                        <span class="meta-text" style="color:#B33F31;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Tersembunyi dari publik</span>
+                    </div>
+                    <div class="actions">
+                        <a href="{% url 'admin_edit_event' event.event_id %}" class="btn-edit">Edit</a>
+                        <form method="post" action="{% url 'admin_change_event_status' event.event_id %}" style="display:inline">
+                            {% csrf_token %}<input type="hidden" name="status" value="draft">
+                            <button type="submit" class="btn-edit" onclick="return confirm('Kembalikan ke Draft?')">Unarchive</button>
+                        </form>
+                        <form method="post" action="{% url 'admin_delete_event' event.event_id %}" style="display:inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-delete" onclick="return confirm('Hapus event ini secara permanen?')">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}{% endfor %}
+            </div>
+        </div>
+
+        <!-- NEWS TAB -->
+        <div id="news" class="tab-content">
+            <div style="text-align: right; margin-bottom: 15px;">
+                <a href="{% url 'admin_add_news' %}" class="btn-add">+ Tambah News</a>
+            </div>
+            <div class="content-list" id="list-news">
+                {% for n in news_items %}
+                <div class="list-item" data-search="{{ n.title|lower }}">
+                    <div class="item-left">
+                        <img src="{% if n.image_file %}{{ n.image_file.url }}{% elif n.image_url %}{{ n.image_url }}{% else %}https://picsum.photos/400/300?random={{ n.news_id }}{% endif %}" data-gdrive="{% if n.image_url %}{{ n.image_url }}{% endif %}" class="item-thumb" onerror="this.src='https://picsum.photos/400/300?random={{ n.news_id }}'">
+                        <div class="item-info">
+                            <div class="item-title">{{ n.title }}</div>
+                            <span class="meta-text"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> {{ n.created_at|date:'j M Y' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="item-middle">
+                        <span class="meta-text" style="color: var(--text-muted); font-weight: 600;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg> {{ n.edition.edition_name|default:'No Edition' }}</span>
+                        <span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> {{ n.views|default:'0' }} views</span>
+                    </div>
+
+                    <div class="actions">
+                        <a href="{% url 'admin_edit_news' n.news_id %}" class="btn-edit">Edit</a>
+                        <a href="{% url 'redirect_news' n.news_id %}" target="_blank" class="btn-preview">Preview</a>
+                        <form method="post" action="{% url 'admin_delete_news' n.news_id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-delete" onclick="return confirm('Hapus news ini?')">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">Tidak ada news untuk ditampilkan.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ATTRIBUTES TAB -->
+        <div id="attributes" class="tab-content">
+            <div style="text-align: right; margin-bottom: 15px;">
+                <a href="{% url 'admin_add_attribute' %}" class="btn-add">+ Tambah Attribute</a>
+            </div>
+            <div class="content-list" id="list-attributes">
+                {% for attr in attributes %}
+                <div class="list-item" data-search="{{ attr.attribute_name|lower }}">
+                    <div class="item-left">
+                        <img src="{% if attr.file_url %}{{ attr.file_url }}{% else %}https://picsum.photos/400/300?random={{ attr.attribute_id }}{% endif %}"
+                             data-gdrive="{% if attr.file_url %}{{ attr.file_url }}{% endif %}"
+                             class="item-thumb"
+                             alt="{{ attr.attribute_name }}"
+                             loading="lazy"
+                             onerror="this.src='https://picsum.photos/400/300?random={{ attr.attribute_id }}'">
+                        <div class="item-info">
+                            <div class="item-title">{{ attr.attribute_name }}</div>
+                            <span class="meta-text"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> {{ attr.created_at|date:'j M Y' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="item-middle">
+                        <span class="meta-text" style="text-transform: capitalize;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg> {{ attr.attribute_type }}</span>
+                        <span class="meta-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> {{ attr.views|default:'0' }} views</span>
+                        {% if attr.file_url %}
+                        <span class="meta-text" style="color: var(--forest); font-weight: 600;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            <a href="{{ attr.file_url }}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; word-break: break-all;">{{ attr.file_url }}</a>
+                        </span>
+                        {% else %}
+                        <span class="meta-text" style="color: var(--text-muted);">Tidak ada file tersimpan</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="actions">
+                        <a href="{% url 'admin_edit_attribute' attr.attribute_id %}" class="btn-edit">Edit</a>
+                        <a href="{% url 'redirect_attribute' attr.attribute_id %}" target="_blank" class="btn-preview">Preview</a>
+                        <form method="post" action="{% url 'admin_delete_attribute' attr.attribute_id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-delete" onclick="return confirm('Hapus attribute ini?')">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">Tidak ada attribute untuk ditampilkan.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+
+    <script>
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function filterItems() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+
+            document.querySelectorAll('.list-item').forEach(item => {
+                const text = item.getAttribute('data-search') || '';
+                item.style.display = text.includes(query) ? 'flex' : 'none';
+            });
+        }
+
+        /* GDrive Image Converter for Thumbnails */
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll("img[data-gdrive]").forEach(img => {
+                const url = img.getAttribute("data-gdrive");
+                if (!url) return;
+
+                let fileId = null;
+                const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                if (m1) fileId = m1[1];
+
+                const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+                if (!fileId && m2) fileId = m2[1];
+
+                if (fileId) {
+                    img.src = `https://drive.google.com/thumbnail?id=${fileId}&sz=w200`;
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

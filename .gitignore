@@ -1,0 +1,13 @@
+﻿.venv/
+env/
+venv_clean/
+__pycache__/
+*.pyc
+.env
+cms/.env
+staticfiles/
+media/
+db.sqlite3
+*.log
+.DS_Store
+check_out.txt

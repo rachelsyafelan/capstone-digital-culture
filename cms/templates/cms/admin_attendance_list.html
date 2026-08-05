@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance — Admin</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --forest: #013320;
+            --forest-light: #016632;
+            --lime: #A6F24A;
+            --lime-light: #EEF9E4;
+            --ink: #0f172a;
+            --slate-body: #F8FAFC;
+            --slate-border: #E2E8F0;
+            --slate-text: #475569;
+            --slate-muted: #64748B;
+            --card-bg: #FFFFFF;
+            /* sizing tokens synced with admin.html so page dimensions stay stable across the panel */
+            --radius-lg: 28px;
+            --radius-card: 20px;
+            --radius-md: 10px;
+            --radius-pill: 999px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02);
+            --shadow-md: 0 8px 24px rgba(15,61,46,0.06);
+            --shadow-lg: 0 14px 40px rgba(15,61,46,0.10);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
+
+        body {
+            background: var(--slate-body);
+            color: var(--ink);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ============ NAVBAR (synced with Explore Admin) ============ */
+        .navbar { background: #0F3D2E; display: flex; justify-content: space-between; align-items: center; padding: 14px 40px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 24px rgba(11,31,23,0.18); }
+        .logo { font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif; color: #fff; font-weight: 800; font-size: 16.5px; letter-spacing: -0.2px; text-decoration: none; display: flex; align-items: center; gap: 9px; }
+        .logo-mark { width: 26px; height: 26px; border-radius: 8px; background: #B6F500; display: inline-flex; align-items: center; justify-content: center; color: #0B1F17; font-size: 13px; font-weight: 800; }
+        .nav-links { display: flex; align-items: center; gap: 2px; background: rgba(255,255,255,0.07); padding: 5px; border-radius: 999px; }
+        .nav-links a { color: rgba(255,255,255,0.72); text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: 999px; transition: all 0.2s ease; white-space: nowrap; }
+        .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.08); }
+        .nav-links a.active { color: #0B1F17; background: #B6F500; }
+        .nav-logout { margin-left: 10px !important; background: rgba(239,68,68,0.16) !important; color: #FFD3D3 !important; }
+        .nav-logout:hover { background: #ef4444 !important; color: #fff !important; }
+
+        @media (max-width: 900px) {
+            .navbar { flex-direction: column; gap: 12px; padding: 16px 20px; align-items: stretch; }
+            .logo { justify-content: center; }
+            .nav-links { width: 100%; justify-content: center; flex-wrap: wrap; }
+            .nav-links a { font-size: 12.5px; padding: 7px 12px; }
+        }
+
+        .container { width: min(1320px, 92%); margin: 32px auto; padding-bottom: 40px; }
+
+        /* Header / Hero Banner — sized to match admin.html's hero */
+        .hero {
+            background: linear-gradient(135deg, var(--forest), var(--forest-light));
+            padding: 34px 38px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 26px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: var(--shadow-lg);
+        }
+        .hero::before {
+            content: ""; position: absolute; top: -40px; right: -40px;
+            width: 160px; height: 160px; background: var(--lime); opacity: 0.12; border-radius: 50%;
+        }
+        .hero h1 { font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif; font-size: 25px; font-weight: 800; color: white; letter-spacing: -0.4px; }
+        .hero p { font-size: 13.5px; margin-top: 6px; color: rgba(255, 255, 255, 0.72); font-weight: 300; max-width: 480px; }
+
+        /* Section Headings */
+        .section-title {
+            display: flex; align-items: center; gap: 10px; margin: 40px 0 16px;
+            font-size: 16px; font-weight: 600; color: var(--ink); letter-spacing: -0.2px;
+        }
+        .section-title .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--forest-light); }
+        .section-title:first-of-type { margin-top: 0; }
+
+        /* SaaS Style Bento Grid Summary — sized to match admin.html's stat-tile cards */
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 20px; }
+        .summary-card {
+            background: var(--card-bg); border: 1px solid var(--slate-border); border-radius: var(--radius-card); padding: 22px; box-shadow: var(--shadow-md);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .summary-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: rgba(166,242,74,0.4); }
+        .summary-card .num { font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif; font-size: 27px; font-weight: 800; color: var(--ink); line-height: 1.2; letter-spacing: -0.4px; }
+        .summary-card .label { font-size: 12px; color: var(--slate-muted); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+        
+        .summary-card.accent-blue .num { color: var(--forest-light); }
+        .summary-card.accent-green .num { color: #16a34a; }
+        .summary-card.accent-yellow .num { color: #d97706; }
+        .summary-card.accent-red .num { color: #dc2626; }
+
+        /* Select Filters Bar */
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        .filter-bar select {
+            border: 1px solid var(--slate-border); border-radius: var(--radius-pill); padding: 8px 18px; font-size: 13px; font-weight: 500;
+            background: var(--card-bg); color: var(--ink); cursor: pointer; outline: none; box-shadow: var(--shadow-sm); transition: all 0.2s;
+        }
+        .filter-bar select:focus { border-color: var(--forest-light); }
+        .filter-bar a {
+            text-decoration: none; padding: 8px 18px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 500;
+            background: var(--card-bg); color: var(--slate-text); border: 1px solid var(--slate-border); box-shadow: var(--shadow-sm); transition: all 0.2s;
+        }
+        .filter-bar a:hover { border-color: var(--slate-muted); color: var(--ink); }
+        .filter-bar a.active { background: var(--forest); color: white; border-color: var(--forest); font-weight: 600; }
+
+        /* Dynamic Chart Wrapper — sized to match admin.html's .panel */
+        .chart-card {
+            background: var(--card-bg); border: 1px solid var(--slate-border); border-radius: var(--radius-card);
+            padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow-md);
+            transition: box-shadow 0.25s ease, transform 0.25s ease;
+        }
+        .chart-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+        .chart-card .canvas-wrap { position: relative; height: 260px; width: 100%; }
+
+        /* Growth Metrics Badge */
+        .growth-pill { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 600; }
+        .growth-pill.up { background: #dcfce7; color: #15803d; }
+        .growth-pill.down { background: #fee2e2; color: #b91c1c; }
+        .growth-pill.flat { background: #f1f5f9; color: var(--slate-text); }
+
+        /* Modern Table / Row Components — sized to match admin.html's content-list/panel */
+        .att-table {
+            background: var(--card-bg); border: 1px solid var(--slate-border); border-radius: var(--radius-card);
+            overflow: hidden; box-shadow: var(--shadow-md);
+        }
+        .att-row {
+            display: grid; grid-template-columns: 1.5fr 1.2fr 0.8fr 1.3fr 1.2fr; gap: 16px;
+            padding: 18px 24px; align-items: center; border-bottom: 1px solid var(--slate-border);
+        }
+        .att-row.head {
+            font-size: 11.5px; font-weight: 600; text-transform: uppercase; color: var(--slate-text);
+            background: #F8FAFC; letter-spacing: 0.8px; border-bottom: 1px solid var(--slate-border);
+        }
+        .att-row:last-child { border-bottom: none; }
+        .att-row:not(.head):hover { background: #FAFDFB; }
+
+        .att-photo { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid var(--slate-border); transition: transform 0.2s; }
+        .att-photo:hover { transform: scale(1.05); }
+        .att-email { font-weight: 600; font-size: 14px; color: var(--ink); }
+        .att-event { font-size: 13.5px; color: var(--slate-text); font-weight: 500; }
+        .att-coords { font-size: 12px; color: var(--slate-muted); line-height: 1.5; }
+
+        /* Badges */
+        .badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 600; }
+        .badge.pending_verification { background: #fef9c3; color: #92400e; border: 1px solid #fef08a; }
+        .badge.verified { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .badge.rejected { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+        /* Operational Interaction Elements */
+        .actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+        .actions-btn-group { display: flex; gap: 6px; margin-top: 4px; }
+        .btn-verify, .btn-reject {
+            border: 1px solid transparent; border-radius: 6px; padding: 5px 12px; font-size: 11.5px; font-weight: 600; cursor: pointer;
+            transition: all 0.15s ease-in-out;
+        }
+        .btn-verify { background: var(--lime-light); color: var(--forest-light); }
+        .btn-verify:hover { background: var(--lime); color: var(--forest); }
+        .btn-reject { background: transparent; color: #ef4444; }
+        .btn-reject:hover { background: #fef2f2; border-color: #fca5a5; }
+
+        .empty-state { padding: 50px; text-align: center; color: var(--slate-muted); font-size: 14px; }
+
+        @media (max-width: 900px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .container { width: 94%; }
+            .summary-grid { grid-template-columns: 1fr; }
+            .att-table { overflow-x: auto; }
+            .att-row { min-width: 840px; padding: 16px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar">
+        <a href="{% url 'home' %}" class="logo">
+            <span class="logo-mark">DC</span>Digital Culture
+        </a>
+        <div class="nav-links">
+            <a href="/admin-home/" class="{% if request.path == '/admin-home/' %}active{% endif %}">Control</a>
+            <a href="/admin-explore/" class="{% if request.path == '/admin-explore/' %}active{% endif %}">Explore</a>
+            <a href="/admin-attendance/" class="{% if request.path == '/admin-attendance/' %}active{% endif %}">Attendance</a>
+            <a href="/admin-feedback/" class="{% if request.path == '/admin-feedback/' %}active{% endif %}">Feedback</a>
+            <a href="{% url 'admin_logout' %}" class="nav-logout">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div class="hero">
+            <h1>Attendance Verification</h1>
+            <p>Verifikasi kehadiran peserta berdasarkan foto bukti dan koordinat GPS yang dikirim.</p>
+        </div>
+
+        <div class="summary-grid" style="grid-template-columns: repeat(5, 1fr);">
+            <div class="summary-card"><div class="num">{{ summary.total }}</div><div class="label">Total Terdaftar</div></div>
+            <div class="summary-card"><div class="num">{{ summary.not_attended }}</div><div class="label">Belum Absen</div></div>
+            <div class="summary-card accent-yellow"><div class="num">{{ summary.pending }}</div><div class="label">Pending</div></div>
+            <div class="summary-card accent-green"><div class="num">{{ summary.verified }}</div><div class="label">Verified</div></div>
+            <div class="summary-card accent-red"><div class="num">{{ summary.rejected }}</div><div class="label">Rejected</div></div>
+        </div>
+
+        <div class="section-title"><span class="dot"></span> Attendance Analytics — {{ period_label }}</div>
+
+        <form method="get" class="filter-bar">
+            <input type="hidden" name="status" value="{{ current_status }}">
+            <select name="period" onchange="this.form.submit()">
+                <option value="monthly" {% if period == 'monthly' %}selected{% endif %}>Bulanan</option>
+                <option value="quarterly" {% if period == 'quarterly' %}selected{% endif %}>Kuartalan</option>
+                <option value="ytd" {% if period == 'ytd' %}selected{% endif %}>Year-to-Date</option>
+            </select>
+            <select name="year" onchange="this.form.submit()">
+                {% for y in year_choices %}
+                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+            {% if period == 'quarterly' %}
+            <select name="quarter" onchange="this.form.submit()">
+                {% for q in quarter_choices %}
+                <option value="{{ q }}" {% if q == selected_quarter %}selected{% endif %}>Q{{ q }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+            {% if period == 'monthly' %}
+            <select name="month" onchange="this.form.submit()">
+                {% for m_num, m_name in month_choices %}
+                <option value="{{ m_num }}" {% if m_num == selected_month %}selected{% endif %}>{{ m_name }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+        </form>
+
+        <div class="summary-grid">
+            <div class="summary-card accent-blue"><div class="num">{{ attendance_kpi.total_registrations }}</div><div class="label">Total Registrasi</div></div>
+            <div class="summary-card accent-green"><div class="num">{{ attendance_kpi.total_attendance }}</div><div class="label">Total Attendance</div></div>
+            <div class="summary-card accent-blue"><div class="num">{{ attendance_kpi.attendance_rate }}%</div><div class="label">Attendance Rate</div></div>
+            <div class="summary-card accent-red"><div class="num">{{ attendance_kpi.no_show_rate }}%</div><div class="label">No-Show Rate</div></div>
+        </div>
+
+        <div class="chart-card">
+            <div class="canvas-wrap"><canvas id="attendanceAnalyticsChart"></canvas></div>
+        </div>
+
+        <div class="section-title"><span class="dot"></span> Participation Analytics</div>
+
+        <form method="get" class="filter-bar">
+            <input type="hidden" name="status" value="{{ current_status }}">
+            <input type="hidden" name="period" value="{{ period }}">
+            <input type="hidden" name="year" value="{{ selected_year }}">
+            <select name="granularity" onchange="this.form.submit()">
+                <option value="monthly" {% if granularity == 'monthly' %}selected{% endif %}>Per Bulan</option>
+                <option value="quarterly" {% if granularity == 'quarterly' %}selected{% endif %}>Per Kuartal</option>
+                <option value="yearly" {% if granularity == 'yearly' %}selected{% endif %}>Per Tahun</option>
+            </select>
+            {% if granularity != 'yearly' %}
+            <select name="p_year" onchange="this.form.submit()">
+                {% for y in year_choices %}
+                <option value="{{ y }}" {% if y == selected_p_year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+        </form>
+
+        <div class="summary-grid" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="summary-card accent-blue"><div class="num">{{ total_participants }}</div><div class="label">Total Peserta (periode ini)</div></div>
+            <div class="summary-card"><div class="num">{{ latest_period_count }}</div><div class="label">{{ latest_period_label|default:"-" }}</div></div>
+            <div class="summary-card">
+                <div class="num" style="margin-top: 2px;">
+                    {% if growth_percent != None %}
+                        <span class="growth-pill {% if growth_percent > 0 %}up{% elif growth_percent < 0 %}down{% else %}flat{% endif %}">
+                            {% if growth_percent > 0 %}▲{% elif growth_percent < 0 %}▼{% else %}—{% endif %} {{ growth_percent }}%
+                        </span>
+                    {% else %}
+                        <span class="growth-pill flat">N/A</span>
+                    {% endif %}
+                </div>
+                <div class="label" style="margin-top: 6px;">Growth vs Periode Sebelumnya</div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="canvas-wrap"><canvas id="participationAnalyticsChart"></canvas></div>
+        </div>
+
+        <div class="section-title"><span class="dot"></span> Attendance Verification Queue</div>
+
+        <form method="get" class="filter-bar">
+            <input type="hidden" name="status" value="{{ current_status }}">
+            <select name="event" onchange="this.form.submit()">
+                <option value="">Semua Event</option>
+                {% for ev_name in event_options %}
+                <option value="{{ ev_name }}" {% if ev_name == current_event %}selected{% endif %}>{{ ev_name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+
+        <div class="filter-bar">
+            <a href="?{% if current_event %}event={{ current_event|urlencode }}{% endif %}" class="{% if not current_status %}active{% endif %}">Semua</a>
+            {% for value, label in status_choices %}
+            <a href="?status={{ value }}{% if current_event %}&event={{ current_event|urlencode }}{% endif %}" class="{% if current_status == value %}active{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </div>
+
+        <div class="att-table">
+            <div class="att-row head">
+                <div>Peserta</div>
+                <div>Event</div>
+                <div>Foto</div>
+                <div>Lokasi &amp; Waktu</div>
+                <div>Status / Aksi</div>
+            </div>
+
+            {% for item in attendances %}
+            <div class="att-row">
+                <div class="att-email">
+                    <strong style="display:block; margin-bottom:2px; color: var(--ink);">{{ item.reg.full_name }}</strong>
+                    <span style="font-weight: 400; color: var(--slate-muted); font-size: 13px;">{{ item.reg.email }}</span>
+                </div>
+                <div class="att-event">{{ item.reg.event_name }}</div>
+                
+                {% if item.att %}
+                    <div>
+                        {% if item.att.photo_evidence %}
+                        <a href="{{ item.att.photo_evidence.url }}" target="_blank">
+                            <img src="{{ item.att.photo_evidence.url }}" class="att-photo">
+                        </a>
+                        {% else %}<span style="color: var(--slate-muted)">—</span>{% endif %}
+                    </div>
+                    <div class="att-coords">
+                        {% if item.att.latitude %}
+                        <span style="color: var(--slate-text); font-weight: 500;">📍 {{ item.att.latitude }}, {{ item.att.longitude }}</span><br>
+                        {% endif %}
+                        <span style="font-size: 11px; color: var(--slate-muted);">🕒 {{ item.att.attendance_timestamp|date:'d M Y H:i' }}</span>
+                    </div>
+                    <div class="actions">
+                        <span class="badge {{ item.att.status }}">{{ item.att.get_status_display }}</span>
+                        {% if item.att.status == 'pending_verification' %}
+                        <div class="actions-btn-group">
+                            <form method="post" action="{% url 'admin_verify_attendance' item.att.attendance_id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-verify">Verify</button>
+                            </form>
+                            <form method="post" action="{% url 'admin_reject_attendance' item.att.attendance_id %}" onsubmit="return confirm('Tolak attendance ini?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-reject">Reject</button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div><span style="color: var(--slate-muted)">—</span></div>
+                    <div class="att-coords">—</div>
+                    <div class="actions">
+                        <span class="badge" style="background:#f1f5f9; color: var(--slate-text); border: 1px solid var(--slate-border)">Belum Absen</span>
+                    </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="empty-state">Belum ada data attendance yang sesuai.</div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <script>
+        // Global Canvas Settings matching standard layout architecture
+        Chart.defaults.font.family = "'Poppins', sans-serif";
+        Chart.defaults.color = '#64748B';
+
+        // Attendance Analytics Chart Initialization
+        new Chart(document.getElementById('attendanceAnalyticsChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: {{ attendance_chart_labels|safe }},
+                datasets: [{
+                    label: 'Jumlah Attendance',
+                    data: {{ attendance_chart_values|safe }},
+                    backgroundColor: '#016632',
+                    hoverBackgroundColor: '#013320',
+                    borderRadius: 6,
+                    maxBarThickness: 45
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#E2E8F0' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Participation Analytics Chart Initialization
+        new Chart(document.getElementById('participationAnalyticsChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: {{ participation_labels|safe }},
+                datasets: [{
+                    label: 'Jumlah Peserta',
+                    data: {{ participation_values|safe }},
+                    borderColor: '#016632',
+                    backgroundColor: 'rgba(166, 242, 74, 0.15)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#016632',
+                    pointBorderColor: '#FFF',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#E2E8F0' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

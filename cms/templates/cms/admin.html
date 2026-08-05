@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel · Digital Culture</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --ink: #0B1F17;
+            --forest: #0F3D2E;
+            --forest-2: #14543D;
+            --lime: #B6F500;
+            --lime-soft: #E9FFB0;
+            --bg: #F6F8F6;
+            --card: #FFFFFF;
+            --text-muted: #6B7A73;
+            --border: rgba(15,61,46,0.08);
+            --radius-lg: 28px;
+            --radius-md: 20px;
+            --radius-sm: 14px;
+            --shadow-soft: 0 8px 24px rgba(15,61,46,0.06);
+            --shadow-card: 0 14px 40px rgba(15,61,46,0.10);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body { background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+        h1, h2, h3, h4, .logo, .panel-title, .stat-value, .spotlight-value {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* ============ NAVBAR ============ */
+        .navbar {
+            background: var(--forest);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 40px; position: sticky; top: 0; z-index: 1000;
+            box-shadow: 0 4px 24px rgba(11,31,23,0.18);
+        }
+        .logo { color: #fff; font-weight: 800; font-size: 16.5px; letter-spacing: -0.2px; text-decoration: none; display: flex; align-items: center; gap: 9px; }
+        .logo-mark { width: 26px; height: 26px; border-radius: 8px; background: var(--lime); display: inline-flex; align-items: center; justify-content: center; color: var(--ink); font-size: 13px; font-weight: 800; }
+        .nav-links { display: flex; align-items: center; gap: 2px; background: rgba(255,255,255,0.07); padding: 5px; border-radius: 999px; }
+        .nav-links a { color: rgba(255,255,255,0.72); text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: 999px; transition: all 0.2s ease; white-space: nowrap; }
+        .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.08); }
+        .nav-links a.active { color: var(--ink); background: var(--lime); }
+        .nav-logout { margin-left: 10px !important; background: rgba(239,68,68,0.16) !important; color: #FFD3D3 !important; }
+        .nav-logout:hover { background: #ef4444 !important; color: #fff !important; }
+
+        @media (max-width: 900px) {
+            .navbar { flex-direction: column; gap: 12px; padding: 16px 20px; align-items: stretch; }
+            .logo { justify-content: center; }
+            .nav-links { width: 100%; justify-content: center; flex-wrap: wrap; }
+            .nav-links a { font-size: 12.5px; padding: 7px 12px; }
+        }
+
+        /* ============ CONTAINER ============ */
+        .container { width: min(1320px, 92%); margin: 32px auto; padding-bottom: 40px; }
+
+        /* ============ HERO ============ */
+        .hero {
+            background: radial-gradient(120% 160% at 100% 0%, #1B5C42 0%, var(--forest) 45%, var(--ink) 100%);
+            padding: 34px 38px; border-radius: var(--radius-lg); margin-bottom: 26px;
+            display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;
+            box-shadow: var(--shadow-card); position: relative; overflow: hidden;
+        }
+        .hero::after { content: ''; position: absolute; top: -70px; right: -60px; width: 220px; height: 220px; border-radius: 50%; background: rgba(182,245,0,0.08); }
+        .hero-eyebrow { display: inline-flex; align-items: center; gap: 6px; background: rgba(182,245,0,0.14); color: var(--lime); font-size: 11.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 6px 12px; border-radius: 999px; margin-bottom: 12px; }
+        .hero-eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); }
+        .hero h1 { font-size: 25px; color: #fff; font-weight: 800; letter-spacing: -0.4px; }
+        .hero p { font-size: 13.5px; margin-top: 6px; color: rgba(255,255,255,0.72); max-width: 480px; }
+        .hero-status { position: relative; z-index: 1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); padding: 10px 16px; border-radius: 14px; color: #fff; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .hero-status .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 rgba(182,245,0,0.5); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(182,245,0,0.45); } 70% { box-shadow: 0 0 0 8px rgba(182,245,0,0); } 100% { box-shadow: 0 0 0 0 rgba(182,245,0,0); } }
+        @media (prefers-reduced-motion: reduce) { .hero-status .pulse { animation: none; } }
+
+        /* ============ PRIMARY STATS (bento) ============ */
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 20px; }
+
+        .stat-tile {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md);
+            padding: 22px; box-shadow: var(--shadow-soft); transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .stat-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); border-color: rgba(182,245,0,0.4); }
+        .stat-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--lime-soft); color: var(--forest); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+        .stat-icon svg { width: 18px; height: 18px; }
+        .stat-tile h4 { font-family: 'Inter', sans-serif; font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+        .stat-tile .stat-value { margin-top: 6px; font-size: 27px; color: var(--ink); font-weight: 800; letter-spacing: -0.4px; font-variant-numeric: tabular-nums; }
+
+        /* ============ SECONDARY BENTO (spotlight) ============ */
+        .bento-secondary { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 18px; margin-bottom: 26px; align-items: stretch; }
+
+        .mini-tile {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md);
+            padding: 22px; box-shadow: var(--shadow-soft); display: flex; flex-direction: column; justify-content: center;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .mini-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
+        .mini-tile h4 { font-family: 'Inter', sans-serif; font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; }
+        .mini-tile .stat-value { font-size: 24px; color: var(--ink); font-weight: 800; letter-spacing: -0.3px; }
+
+        .spotlight-tile {
+            background: radial-gradient(130% 150% at 100% 0%, #1B5C42 0%, var(--forest) 55%, var(--ink) 100%);
+            border-radius: var(--radius-md); padding: 26px 28px; color: #fff; box-shadow: var(--shadow-card);
+            display: flex; align-items: center; justify-content: space-between; gap: 18px; position: relative; overflow: hidden;
+        }
+        .spotlight-tile::after { content: ''; position: absolute; top: -50px; right: -40px; width: 160px; height: 160px; border-radius: 50%; background: rgba(182,245,0,0.10); }
+        .spotlight-copy { position: relative; z-index: 1; }
+        .spotlight-copy h4 { font-family: 'Inter', sans-serif; font-size: 12px; color: rgba(255,255,255,0.65); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .spotlight-value { font-size: 34px; font-weight: 800; color: var(--lime); letter-spacing: -0.6px; line-height: 1; }
+        .spotlight-sub { margin-top: 8px; font-size: 12.5px; color: rgba(255,255,255,0.72); max-width: 220px; }
+        .spotlight-ring { position: relative; z-index: 1; width: 64px; height: 64px; border-radius: 50%; background: rgba(182,245,0,0.10); border: 1.5px dashed rgba(182,245,0,0.45); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .spotlight-ring svg { width: 26px; height: 26px; color: var(--lime); }
+
+        /* ============ PANELS ============ */
+        .analytics-primary { display: grid; grid-template-columns: 2fr 1.2fr; gap: 18px; margin-bottom: 20px; align-items: stretch; }
+        .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
+
+        .panel {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md);
+            padding: 24px; box-shadow: var(--shadow-soft); display: flex; flex-direction: column;
+            transition: box-shadow 0.25s ease, transform 0.25s ease;
+        }
+        .panel:hover { box-shadow: var(--shadow-card); transform: translateY(-2px); }
+        .panel-title { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+
+        .panel-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; flex-wrap: wrap; gap: 12px; }
+        .panel-header .panel-title { margin-bottom: 3px; }
+        .panel-date-range { font-size: 12px; color: var(--text-muted); }
+
+        .panel > .panel-title { margin-bottom: 18px; }
+
+        .chart-filters { display: flex; gap: 3px; background: var(--bg); padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
+        .chart-filters button { background: transparent; border: none; padding: 7px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.2s ease; font-family: 'Inter', sans-serif; }
+        .chart-filters button:hover { color: var(--ink); }
+        .chart-filters button.active { background: var(--lime); color: var(--ink); }
+
+        .canvas-wrap { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; width: 100%; min-height: 260px; }
+        .canvas-wrap canvas { max-height: 100%; }
+
+        /* ============ SCROLLABLE LISTS ============ */
+        .recent-activity-list, .recent-feedback-list {
+            flex: 1; display: flex; flex-direction: column; gap: 10px;
+            overflow-y: auto; padding-right: 6px; max-height: 340px;
+        }
+        .recent-activity-list::-webkit-scrollbar, .recent-feedback-list::-webkit-scrollbar { width: 6px; }
+        .recent-activity-list::-webkit-scrollbar-track, .recent-feedback-list::-webkit-scrollbar-track { background: transparent; }
+        .recent-activity-list::-webkit-scrollbar-thumb, .recent-feedback-list::-webkit-scrollbar-thumb { background: rgba(15,61,46,0.18); border-radius: 999px; }
+
+        .activity-item, .feedback-item {
+            display: flex; gap: 13px; align-items: flex-start; padding: 14px;
+            border-radius: var(--radius-sm); background: var(--bg); border: 1px solid var(--border);
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+        .activity-item:hover, .feedback-item:hover { background: var(--lime-soft); border-color: rgba(182,245,0,0.35); }
+
+        .activity-icon, .feedback-icon {
+            width: 34px; height: 34px; min-width: 34px; display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 10px; background: var(--lime-soft); color: var(--forest); font-size: 15px;
+        }
+
+        .activity-copy, .feedback-copy { flex: 1; min-width: 0; }
+        .activity-title, .feedback-title { font-size: 13px; color: var(--ink); line-height: 1.45; font-weight: 500; }
+        .activity-time { margin-top: 5px; font-size: 11px; color: var(--text-muted); font-weight: 500; }
+
+        .feedback-meta { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; margin-top: 9px; }
+        .feedback-pill { padding: 4px 10px; border-radius: 999px; font-size: 10.5px; color: var(--forest); background: var(--lime-soft); border: 1px solid rgba(15,61,46,0.08); font-weight: 700; }
+
+        /* ============ INSIGHTS LIST ============ */
+        .insight-list { list-style: none; display: flex; flex-direction: column; gap: 10px; flex: 1; justify-content: center; }
+        .insight-list li { padding: 14px 16px; border-radius: var(--radius-sm); background: var(--bg); color: var(--text-muted); font-size: 13px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); font-weight: 600; }
+        .insight-list li strong { font-weight: 700; color: var(--ink); }
+
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 1100px) {
+            .bento-secondary { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 1024px) {
+            .analytics-primary, .analytics-grid { grid-template-columns: 1fr; }
+            .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 720px) {
+            .container { width: 95%; padding-bottom: 20px; }
+            .hero { padding: 24px 20px; }
+            .hero h1 { font-size: 20px; }
+            .hero p { font-size: 12.8px; }
+            .stats { grid-template-columns: 1fr; gap: 14px; }
+            .stat-tile, .mini-tile, .panel { padding: 17px; }
+            .stat-value { font-size: 22px !important; }
+            .spotlight-value { font-size: 26px; }
+            .panel-header { flex-direction: column; align-items: flex-start; }
+            .chart-filters { width: 100%; overflow-x: auto; }
+            .chart-filters button { white-space: nowrap; }
+            .canvas-wrap { min-height: 220px; }
+        }
+        @media (max-width: 480px) {
+            .container { width: 100%; padding: 0 12px 20px; }
+            .activity-item, .feedback-item { padding: 12px; gap: 10px; }
+            .activity-title, .feedback-title { font-size: 12.5px; }
+            .insight-list li { padding: 12px 14px; font-size: 12.5px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <a href="{% url 'home' %}" class="logo"><span class="logo-mark">DC</span>Digital Culture</a>
+        <div class="nav-links">
+            <a href="/admin-home/" class="{% if request.path == '/admin-home/' %}active{% endif %}">Control</a>
+            <a href="/admin-explore/" class="{% if request.path == '/admin-explore/' %}active{% endif %}">Explore</a>
+            <a href="/admin-attendance/" class="{% if request.path == '/admin-attendance/' %}active{% endif %}">Attendance</a>
+            <a href="/admin-feedback/" class="{% if request.path == '/admin-feedback/' %}active{% endif %}">Feedback</a>
+            <a href="{% url 'admin_logout' %}" class="nav-logout">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- HERO -->
+        <div class="hero">
+            <div>
+                <div class="hero-eyebrow"><span class="dot"></span>Admin Panel</div>
+                <h1>Admin Control Panel</h1>
+                <p>Memantau kinerja sistem, mengelola konten, dan menganalisis perilaku pengguna Pegadaian Digital Culture.</p>
+            </div>
+            <div class="hero-status"><span class="pulse"></span>Sistem berjalan normal</div>
+        </div>
+
+        <!-- PRIMARY STATS -->
+        <div class="stats">
+            <div class="stat-tile">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+                </div>
+                <h4>Total Content</h4>
+                <div class="stat-value">{{ total_content }}</div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </div>
+                <h4>Total Views</h4>
+                <div class="stat-value">{{ total_views }}</div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                </div>
+                <h4>Active Events</h4>
+                <div class="stat-value">{{ active_content }}</div>
+            </div>
+            <div class="stat-tile">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                </div>
+                <h4>Feedback</h4>
+                <div class="stat-value">{{ total_feedback }}</div>
+            </div>
+        </div>
+
+        <!-- SECONDARY BENTO (Avg Time / Engagement spotlight / Trends) -->
+        <div class="bento-secondary">
+            <div class="mini-tile">
+                <h4>Avg Time</h4>
+                <div class="stat-value">{{ avg_time }}</div>
+            </div>
+
+            <div class="spotlight-tile">
+                <div class="spotlight-copy">
+                    <h4>Engagement Score</h4>
+                    <div class="spotlight-value">{{ engagement_percentage }}</div>
+                    <div class="spotlight-sub">{{ engagement_text }}</div>
+                </div>
+                <div class="spotlight-ring">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+                </div>
+            </div>
+
+            <div class="mini-tile">
+                <h4>Trends</h4>
+                <div class="stat-value">{{ trends }}</div>
+            </div>
+        </div>
+
+        <!-- MAIN (WEEKLY & RECENT ACTIVITY) -->
+        <div class="analytics-primary">
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <div class="panel-title">Visitor Activity Analytics</div>
+                        <div class="panel-date-range" id="activityDateRange">{{ initial_date_range_text }}</div>
+                    </div>
+                    <div class="chart-filters" id="activityFilters">
+                        <button class="active" data-period="1week">1 Week</button>
+                        <button data-period="1month">1 Month</button>
+                        <button data-period="6months">6 Months</button>
+                        <button data-period="1year">1 Year</button>
+                    </div>
+                </div>
+                <div class="canvas-wrap">
+                    <canvas id="weeklyActivityChart"></canvas>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Recent Activity</div>
+                <div class="recent-activity-list">
+                    {% for item in recent_admin_activities %}
+                    <div class="activity-item">
+                        <div class="activity-icon">{{ item.icon }}</div>
+                        <div class="activity-copy">
+                            <div class="activity-title">{{ item.title }}</div>
+                            <div class="activity-time">{{ item.when }}</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="activity-item">
+                        <div class="activity-icon">ℹ️</div>
+                        <div class="activity-copy">
+                            <div class="activity-title">Belum ada aktivitas admin terbaru.</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ANALYTICS GRID -->
+        <div class="analytics-grid">
+            <div class="panel">
+                <div class="panel-title">Sentiment Overview</div>
+                <div class="canvas-wrap">
+                    <canvas id="sentimentPie"></canvas>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Insights &amp; Activity</div>
+                <ul class="insight-list">
+                    <li><strong>Total Feedback</strong> <span>{{ total_feedback }} entries</span></li>
+                    <li><strong>Positive</strong> <span>{{ positive }} ({{ positive_percent }}%)</span></li>
+                    <li><strong>Neutral</strong> <span>{{ neutral }} ({{ neutral_percent }}%)</span></li>
+                    <li><strong>Negative</strong> <span>{{ negative }} ({{ negative_percent }}%)</span></li>
+                </ul>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Recent Feedback</div>
+                <div class="recent-feedback-list">
+                    {% for fb in recent_feedbacks %}
+                    <div class="feedback-item">
+                        <div class="feedback-icon">💬</div>
+                        <div class="feedback-copy">
+                            <div class="feedback-title">{{ fb.comment }}</div>
+                            <div class="feedback-meta">
+                                <span class="feedback-pill">{{ fb.sentiment }}</span>
+                                <span class="feedback-pill">⭐ {{ fb.rating }}</span>
+                                <span class="feedback-pill">{{ fb.platform }}</span>
+                                <span class="activity-time" style="margin-top:0;">{{ fb.when }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="feedback-item">
+                        <div class="feedback-icon">ℹ️</div>
+                        <div class="feedback-copy">
+                            <div class="feedback-title">Belum ada feedback terbaru.</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Weekly Activity Chart
+        const initialLabels = JSON.parse('{{ weekly_labels_json|escapejs }}');
+        const initialData = JSON.parse('{{ weekly_data_json|escapejs }}');
+        const initialAvgTimes = JSON.parse('{{ weekly_avg_times_json|escapejs }}');
+
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#6B7A73';
+
+        const activityChartCtx = document.getElementById('weeklyActivityChart').getContext('2d');
+        let activityChart = new Chart(activityChartCtx, {
+            type: 'line',
+            data: {
+                labels: initialLabels,
+                datasets: [{
+                    label: 'Visitor Activity',
+                    data: initialData,
+                    avgTimes: initialAvgTimes,
+                    backgroundColor: 'rgba(182,245,0,0.18)',
+                    borderColor: '#0F3D2E',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#B6F500',
+                    pointBorderColor: '#0F3D2E',
+                    pointBorderWidth: 1.5,
+                    tension: 0.35,
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0B1F17',
+                        padding: 10,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function (context) {
+                                const val = context.parsed.y;
+                                const avg = context.dataset.avgTimes[context.dataIndex];
+                                return [
+                                    `Visitor Activity: ${val}`,
+                                    `Average Time: ${avg}`
+                                ];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 },
+                        grid: { color: 'rgba(15,61,46,0.06)' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // Handle Filters
+        document.querySelectorAll('#activityFilters button').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('#activityFilters button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const period = this.getAttribute('data-period');
+
+                fetch(`?action=get_chart_data&period=${period}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(res => {
+                        document.getElementById('activityDateRange').textContent = res.date_range_text;
+                        activityChart.data.labels = res.labels;
+                        activityChart.data.datasets[0].data = res.data;
+                        activityChart.data.datasets[0].avgTimes = res.avg_times;
+                        activityChart.update();
+                    })
+                    .catch(err => console.error('Error fetching chart data:', err));
+            });
+        });
+
+        // Sentiment Overview Chart
+        const sentimentPieCtx = document.getElementById('sentimentPie').getContext('2d');
+        new Chart(sentimentPieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Positive', 'Neutral', 'Negative'],
+                datasets: [{
+                    data: [{{ positive }}, {{ neutral }}, {{ negative }}],
+                    backgroundColor: ['#B6F500', '#F2C14E', '#E4675F'],
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#334155', font: { family: 'Inter' }, padding: 20 }
+                    },
+                    tooltip: {
+                        backgroundColor: '#0B1F17',
+                        cornerRadius: 8,
+                        callbacks: { label: function (context) { return ` ${context.label}: ${context.parsed} entries`; } },
+                        bodyFont: { family: 'Inter' }
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+
+</html>

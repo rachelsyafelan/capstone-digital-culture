@@ -1,0 +1,1663 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Explore</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --ink: #0B1F17;
+            --forest: #0F3D2E;
+            --forest-2: #1B5C42;
+            --lime: #B6F500;
+            --lime-soft: #E9FFB0;
+            --bg: #F6F8F6;
+            --card: #FFFFFF;
+            --text-muted: #6B7A73;
+            --border: rgba(15,61,46,0.08);
+            --radius-lg: 28px;
+            --radius-md: 20px;
+            --radius-sm: 14px;
+            --shadow-soft: 0 8px 24px rgba(15,61,46,0.06);
+            --shadow-card: 0 14px 40px rgba(15,61,46,0.10);
+        }
+
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+        h1, h2, h3, h5, h6, .brand-link, .navbar a, .section-title { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        /* NAVBAR */
+        .navbar {
+            background-color: rgba(11,31,23,0.92);
+            backdrop-filter: blur(14px);
+            position: sticky; top: 0; z-index: 1000;
+            padding-top: 16px; padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .navbar a {
+            text-decoration: none !important;
+            color: rgba(255,255,255,0.65);
+            transition: all 0.25s ease;
+            font-weight: 500; font-size: 14.5px;
+        }
+        .navbar a:hover { color: var(--lime) !important; }
+        .brand-link { text-decoration: none !important; color: white; display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
+        .brand-logo { width: 30px; height: 30px; border-radius: 8px; background: var(--lime); padding: 4px; transition: transform 0.3s; }
+        .brand-link:hover .brand-logo { transform: rotate(8deg) scale(1.05); }
+        .navbar-toggler { border: 0; padding: 0; }
+        .navbar-toggler:focus { box-shadow: none; }
+        .navbar-toggler-icon { filter: brightness(0) invert(1); }
+
+        .admin-btn { background: var(--lime); color: var(--ink) !important; padding: 9px 26px; border-radius: 999px; font-weight: 700; margin-left: 5px; text-align: center; font-size: 14px; box-shadow: 0 6px 16px rgba(182,245,0,0.25); }
+        .admin-btn:hover { background: #C8FF33 !important; color: var(--ink) !important; transform: translateY(-2px) !important; }
+
+        .active-link { font-weight: 600 !important; color: #fff !important; position: relative; }
+        .active-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: -8px; height: 2px; background: var(--lime); border-radius: 2px; }
+
+        @media (max-width: 767.98px) {
+            .navbar-collapse { background-color: #0B1F17; padding: 18px 14px; border-radius: 16px; margin-top: 12px; }
+            .nav-links-container { flex-direction: column; align-items: flex-start !important; gap: 16px !important; width: 100%; }
+            .admin-btn { margin-left: 0 !important; width: 100%; text-align: center; }
+            .active-link::after { display: none; }
+        }
+
+        .header { margin: 36px 0 28px; }
+        .header h3 { font-weight: 800; font-size: 1.8rem; letter-spacing: -0.3px; margin-bottom: 6px; }
+        .header p { color: var(--text-muted); font-size: 0.97rem; }
+
+        @media (max-width: 767.98px) {
+            .header { margin: 24px 0 20px; }
+            .header h3 { font-size: 1.45rem; }
+            .header p { font-size: 0.92rem; }
+        }
+
+        /* TOP BAR */
+        .explore-topbar {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        @media (max-width: 767.98px) {
+            .explore-topbar { padding: 14px; }
+        }
+
+        .search-input {
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            padding-left: 42px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            background: var(--bg);
+        }
+        .search-input:focus { box-shadow: 0 0 0 3px rgba(182,245,0,0.3); border-color: var(--lime); background: white; }
+
+        .search-wrap { position: relative; }
+        .search-icon { position: absolute; top: 50%; left: 16px; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none; }
+
+        .filter-chip {
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            color: var(--forest);
+            background: var(--bg);
+            font-weight: 600;
+            font-size: 13px;
+            padding: 7px 16px;
+            transition: all 0.2s ease;
+        }
+
+        @media (max-width: 767.98px) {
+            .filter-chip,
+            #exploreClearBtn {
+                font-size: 12px;
+                padding: 7px 12px;
+            }
+        }
+        .filter-chip:hover { border-color: var(--lime); }
+        .filter-chip.active { background: var(--forest); color: white; border-color: var(--forest); }
+
+        #exploreClearBtn {
+            border-radius: 999px; font-weight: 600; font-size: 13px;
+            border: 1px solid var(--border); color: var(--text-muted);
+        }
+        #exploreClearBtn:hover { background: var(--ink); color: white; border-color: var(--ink); }
+
+        /* TABS */
+        .nav-tabs { border-bottom: 1px solid var(--border); gap: 6px; flex-wrap: wrap; }
+        .nav-tabs .nav-link {
+            border: none; color: var(--text-muted); font-weight: 600; font-size: 14.5px;
+            padding: 10px 18px; border-radius: 999px 999px 0 0;
+            transition: all 0.2s ease;
+        }
+
+        @media (max-width: 767.98px) {
+            .nav-tabs { gap: 8px; }
+            .nav-tabs .nav-link {
+                font-size: 13px;
+                padding: 8px 14px;
+                width: 100%;
+                text-align: center;
+            }
+        }
+        .nav-tabs .nav-link:hover { color: var(--forest); background: var(--lime-soft); }
+        .nav-tabs .nav-link.active {
+            color: var(--forest);
+            border-bottom: 3px solid var(--lime);
+            background: transparent;
+        }
+
+        /* SCROLL (Vertical Stacked Grid Layout) */
+        .scroll-wrap { position: relative; }
+        .scroll-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+            padding-bottom: 24px;
+        }
+        /* Hide scroll buttons since layout is vertical */
+        .scroll-btn { display: none !important; }
+
+        /* CARD */
+        .card-custom {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+            transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+            display: flex; flex-direction: column;
+            position: relative;
+            height: 100%;
+        }
+        .card-custom:hover { transform: translateY(-6px); box-shadow: var(--shadow-card); border-color: rgba(182,245,0,0.5); }
+
+        .card-img { height: 170px; width: 100%; object-fit: cover; transition: transform .35s ease; }
+
+        @media (max-width: 767.98px) {
+            .card-img { height: 150px; }
+            .card-body { padding: 14px; }
+            .card-body h6 { font-size: 13.5px; }
+            .card-body p { font-size: 12px; }
+        }
+        .card-custom:hover .card-img { transform: scale(1.04); }
+
+        .card-badge {
+            position: absolute; top: 12px; left: 12px;
+            border-radius: 999px; padding: 6px 12px; font-size: 11px; font-weight: 700;
+            backdrop-filter: blur(6px); z-index: 2; letter-spacing: 0.2px;
+        }
+        .badge-upcoming { background: rgba(182,245,0,0.95); color: var(--ink); }
+        .badge-ongoing { background: rgba(31, 111, 235, 0.95); color: white; }
+        .badge-past { background: rgba(11,31,23,0.85); color: white; }
+
+        .card-body { padding: 16px; display: flex; flex-direction: column; flex-grow: 1; }
+        .card-body h6 { font-size: 14.5px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+        .card-body p { font-size: 12.5px; margin-bottom: 4px; color: var(--text-muted) !important; }
+
+        .rating { color: var(--forest); font-size: 13px; font-weight: 700; background: var(--lime-soft); display: inline-block; padding: 3px 10px; border-radius: 999px; }
+
+        .card-buttons { margin-top: auto; padding-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .btn-success.btn-sm.btn-popup-detail {
+            background: var(--forest); border-color: var(--forest); color: white;
+            border-radius: 999px; font-weight: 600; font-size: 12.5px; padding: 6px 16px;
+            transition: all 0.2s ease; border: 1px solid var(--forest); cursor: pointer;
+        }
+        .btn-success.btn-sm.btn-popup-detail:hover { background: var(--ink); border-color: var(--ink); }
+
+        .btn-outline-secondary.btn-sm {
+            border-radius: 999px; font-weight: 600; font-size: 12.5px; padding: 6px 16px;
+            border-color: var(--border); color: var(--text-muted);
+        }
+        .btn-outline-secondary.btn-sm:hover { background: var(--ink); border-color: var(--ink); color: white; }
+
+        .btn-secondary.btn-sm[disabled] {
+            border-radius: 999px; font-weight: 600; font-size: 12.5px; padding: 6px 16px;
+            background: var(--bg); border-color: var(--border); color: var(--text-muted); opacity: 1;
+        }
+
+        .btn-outline-success.btn-sm, .btn-success.btn-sm {
+            border-radius: 999px; font-weight: 600; font-size: 12.5px; padding: 6px 16px;
+        }
+        .btn-outline-success.btn-sm { border-color: var(--forest); color: var(--forest); }
+        .btn-outline-success.btn-sm:hover { background: var(--forest); color: white; }
+        a.btn-success.btn-sm { background: var(--forest); border-color: var(--forest); color: white; }
+        a.btn-success.btn-sm:hover { background: var(--ink); border-color: var(--ink); }
+
+        .section-title { margin: 36px 0 16px; font-weight: 800; font-size: 1.2rem; color: var(--ink); display: flex; align-items: center; gap: 10px; }
+        .section-title::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--lime); }
+
+        .badge-core-modal {
+            background: var(--lime-soft); color: var(--forest);
+            border-radius: 999px; padding: 5px 14px; font-size: 12px; font-weight: 700;
+        }
+
+        .card-custom.hidden { display: none !important; }
+
+        /* ASSET / LOGO / VIDEO BUTTONS */
+        a.btn-sm[style*="background:#016632"], a.btn-sm[style*="background: #016632"] {
+            background: var(--forest) !important;
+        }
+
+        /* LOGIN BUTTON */
+        .login-btn {
+            background: var(--lime);
+            color: var(--ink) !important;
+            padding: 9px 26px;
+            border-radius: 999px;
+            font-weight: 700;
+            margin-left: 5px;
+            text-align: center;
+            font-size: 14px;
+            box-shadow: 0 6px 16px rgba(182,245,0,0.25);
+            border: none;
+            cursor: pointer;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: all 0.2s ease;
+        }
+        .login-btn:hover {
+            background: #C8FF33 !important;
+            color: var(--ink) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(182,245,0,0.35);
+        }
+        @media (max-width: 767.98px) {
+            .login-btn { margin-left: 0 !important; width: 100%; text-align: center; }
+        }
+
+        /* LOGIN MODAL */
+        .login-overlay { display: none; position: fixed; inset: 0; z-index: 3000; background: rgba(11,31,23,0.6); backdrop-filter: blur(6px); align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity .22s ease; }
+        .login-overlay.open { display: flex; }
+        .login-overlay.open.visible { opacity: 1; }
+        .login-modal { background: var(--card); border-radius: var(--radius-lg); width: 100%; max-width: 460px; overflow: hidden; box-shadow: 0 32px 80px rgba(11,31,23,0.28); transform: translateY(24px) scale(0.97); opacity: 0; transition: transform .28s cubic-bezier(0.16,1,0.3,1), opacity .24s ease; }
+        .login-overlay.open.visible .login-modal { transform: none; opacity: 1; }
+
+        .login-header { background: var(--forest); padding: 36px 36px 28px; position: relative; overflow: hidden; }
+        .login-header::before { content: ''; position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; border-radius: 50%; background: rgba(182,245,0,0.08); }
+        .login-header::after { content: ''; position: absolute; bottom: -70px; left: -30px; width: 180px; height: 180px; border-radius: 50%; background: rgba(255,255,255,0.04); }
+        .login-logo { position: relative; z-index: 1; width: 44px; height: 44px; border-radius: 12px; background: var(--lime); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+        .login-logo img { width: 28px; height: 28px; }
+        .login-header h3 { position: relative; z-index: 1; color: white; font-weight: 800; font-size: 1.35rem; margin-bottom: 6px; }
+        .login-header p { position: relative; z-index: 1; color: rgba(255,255,255,0.7); font-size: 0.875rem; margin: 0; }
+
+        .login-body { padding: 32px 36px 36px; }
+        .login-label { font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 6px; display: block; }
+        .login-input { width: 100%; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 14px; font-family: 'Inter', sans-serif; color: var(--ink); background: var(--bg); transition: all 0.2s; outline: none; }
+        .login-input:focus { border-color: var(--lime); background: white; box-shadow: 0 0 0 3px rgba(182,245,0,0.25); }
+        .login-submit { width: 100%; background: var(--forest); color: white; font-weight: 700; font-size: 14px; padding: 13px; border-radius: 12px; border: none; cursor: pointer; transition: all 0.2s; margin-top: 8px; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .login-submit:hover { background: var(--ink); }
+        .login-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+        .login-close-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .login-close-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+        .login-close-btn:hover { background: var(--ink); color: white; border-color: var(--ink); }
+        .login-error { background: #fff5f5; border: 1px solid #fcc; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #c0392b; margin-bottom: 16px; display: none; }
+        .login-error.show { display: block; }
+        .login-divider { text-align: center; margin: 6px 0 16px; font-size: 12px; color: var(--text-muted); }
+
+
+        /* ══════════════════════════════════════════════
+           DETAIL MODAL (popup, replaces old broken #detailModal)
+        ══════════════════════════════════════════════ */
+        .detail-overlay {
+            display: none; position: fixed; inset: 0; z-index: 2500;
+            background: rgba(11,31,23,0.6);
+            backdrop-filter: blur(6px);
+            align-items: center; justify-content: center; padding: 20px;
+            opacity: 0; transition: opacity .25s ease;
+        }
+        .detail-overlay.open { display: flex; }
+        .detail-overlay.open.visible { opacity: 1; }
+
+        .detail-shell {
+            background: var(--card);
+            border-radius: var(--radius-lg);
+            width: 100%; max-width: 760px;
+            max-height: 92vh; overflow-y: auto;
+            box-shadow: 0 32px 80px rgba(11,31,23,0.30);
+            transform: translateY(28px) scale(0.96);
+            opacity: 0;
+            transition: transform .32s cubic-bezier(0.16,1,0.3,1), opacity .28s ease;
+        }
+        .detail-overlay.open.visible .detail-shell { transform: none; opacity: 1; }
+        .detail-shell::-webkit-scrollbar { width: 6px; }
+        .detail-shell::-webkit-scrollbar-thumb { background: rgba(15,61,46,0.18); border-radius: 999px; }
+
+        .detail-hero { position: relative; height: 260px; overflow: hidden; background: var(--forest); }
+        .detail-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .detail-hero-scrim {
+            position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(11,31,23,0.05) 0%, rgba(11,31,23,0.20) 45%, rgba(11,31,23,0.85) 100%);
+        }
+        .detail-close-btn {
+            position: absolute; top: 16px; right: 16px; z-index: 5;
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(11,31,23,0.55); color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; cursor: pointer; transition: all 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .detail-close-btn:hover { background: rgba(11,31,23,0.85); transform: scale(1.06); }
+        .detail-hero-bottom {
+            position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+            padding: 24px 30px 22px;
+        }
+        .detail-cores { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+        .detail-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800; font-size: 1.55rem; color: #fff;
+            line-height: 1.22; text-shadow: 0 2px 16px rgba(0,0,0,0.3);
+        }
+
+        .detail-body { padding: 30px 34px 8px; }
+        .detail-meta-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+            margin-bottom: 30px;
+        }
+        @media (max-width: 600px) { .detail-meta-grid { grid-template-columns: 1fr; } }
+        .detail-meta-cell {
+            background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+        }
+        .detail-meta-icon {
+            width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+            background: var(--forest); color: var(--lime);
+            display: flex; align-items: center; justify-content: center; font-size: 15px;
+        }
+        .detail-meta-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: 2px; }
+        .detail-meta-val { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+
+        .detail-rating-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--lime-soft); color: var(--forest);
+            border-radius: 999px; padding: 7px 16px; font-weight: 700; font-size: 13.5px;
+            margin-bottom: 24px;
+        }
+
+        .detail-sec-title {
+            font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1rem;
+            color: var(--ink); display: flex; align-items: center; gap: 9px; margin-bottom: 12px;
+        }
+        .detail-sec-title::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--lime); flex-shrink: 0; }
+        .detail-desc { color: var(--text-muted); font-size: 14.5px; line-height: 1.75; margin-bottom: 28px; }
+
+        .detail-footer {
+            padding: 20px 34px 30px;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+            border-top: 1px solid var(--border); margin-top: 6px;
+        }
+        .detail-fulllink {
+            font-size: 13px; font-weight: 600; color: var(--text-muted); text-decoration: none;
+            display: inline-flex; align-items: center; gap: 6px; transition: color .2s;
+        }
+        .detail-fulllink:hover { color: var(--forest); }
+        .btn-daftar-detail {
+            background: var(--lime); color: var(--ink); border: none; border-radius: 999px;
+            padding: 12px 30px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 14px;
+            cursor: pointer; transition: all .2s; box-shadow: 0 8px 20px rgba(182,245,0,0.3);
+        }
+        .btn-daftar-detail:hover { background: #C8FF33; transform: translateY(-1px); box-shadow: 0 12px 26px rgba(182,245,0,0.4); }
+
+        @media (max-width: 600px) {
+            .detail-hero { height: 200px; }
+            .detail-title { font-size: 1.2rem; }
+            .detail-body { padding: 22px 20px 8px; }
+            .detail-footer { padding: 18px 20px 24px; flex-direction: column; align-items: stretch; }
+            .btn-daftar-detail { width: 100%; }
+        }
+
+        /* ══════════════════════════════════════════════
+           REGISTER MODAL (stacked above Detail Modal)
+        ══════════════════════════════════════════════ */
+        .reg-overlay {
+            display: none; position: fixed; inset: 0; z-index: 2600;
+            background: rgba(11,31,23,0.45);
+            backdrop-filter: blur(4px);
+            align-items: center; justify-content: center; padding: 20px;
+            opacity: 0; transition: opacity .25s ease;
+        }
+        .reg-overlay.open { display: flex; }
+        .reg-overlay.open.visible { opacity: 1; }
+
+        .reg-shell {
+            background: var(--card); border-radius: var(--radius-lg);
+            width: 100%; max-width: 920px; max-height: 92vh; overflow: hidden;
+            display: flex; box-shadow: 0 32px 80px rgba(11,31,23,0.34);
+            transform: translateY(28px) scale(0.96); opacity: 0;
+            transition: transform .32s cubic-bezier(0.16,1,0.3,1), opacity .28s ease;
+        }
+        .reg-overlay.open.visible .reg-shell { transform: none; opacity: 1; }
+
+        .reg-left {
+            flex: 0 0 300px; background: var(--forest); padding: 44px 34px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            position: relative; overflow: hidden;
+        }
+        .reg-left::before { content: ''; position: absolute; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(182,245,0,0.10), transparent 70%); top: -80px; right: -80px; pointer-events: none; }
+        .reg-left::after { content: ''; position: absolute; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.04), transparent 70%); bottom: -70px; left: -50px; pointer-events: none; }
+        .reg-left-top { position: relative; z-index: 1; }
+        .reg-back-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: rgba(255,255,255,0.7); font-size: 12.5px; font-weight: 600;
+            background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 18px;
+            transition: color .2s;
+        }
+        .reg-back-link:hover { color: var(--lime); }
+        .reg-pill {
+            display: inline-block; background: rgba(182,245,0,0.16); border: 1px solid rgba(182,245,0,0.30);
+            color: var(--lime); font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+            padding: 5px 13px; border-radius: 999px; margin-bottom: 20px;
+        }
+        .reg-left h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.25rem; color: #fff; line-height: 1.28; margin-bottom: 12px; }
+        .reg-left p { color: rgba(255,255,255,0.65); font-size: 13.5px; line-height: 1.65; margin-bottom: 0; }
+        .reg-meta-list { position: relative; z-index: 1; border-top: 1px solid rgba(255,255,255,0.10); padding-top: 22px; margin-top: 28px; }
+        .reg-meta-item { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
+        .reg-meta-item:last-child { border-bottom: none; }
+        .reg-meta-icon { width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0; background: rgba(182,245,0,0.13); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .reg-meta-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,0.42); margin-bottom: 2px; }
+        .reg-meta-val { font-size: 13px; font-weight: 700; color: #fff; }
+
+        .reg-right { flex: 1; padding: 44px 40px; overflow-y: auto; display: flex; flex-direction: column; }
+        .reg-right::-webkit-scrollbar { width: 5px; }
+        .reg-right::-webkit-scrollbar-thumb { background: rgba(15,61,46,0.15); border-radius: 999px; }
+        .reg-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 28px; }
+        .reg-top-row h4 { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.25rem; color: var(--forest); margin-bottom: 4px; }
+        .reg-top-row p { color: var(--text-muted); font-size: 13.5px; margin: 0; }
+        .reg-close-btn { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid var(--border); background: transparent; color: var(--text-muted); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .18s; }
+        .reg-close-btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+        .reg-f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        @media (max-width: 560px) { .reg-f-row { grid-template-columns: 1fr; } }
+        .reg-f-group { margin-bottom: 16px; }
+        .reg-f-label { display: block; font-size: 11.5px; font-weight: 700; color: var(--ink); margin-bottom: 7px; letter-spacing: .02em; }
+        .reg-f-label .opt { font-weight: 400; color: var(--text-muted); margin-left: 4px; }
+        .reg-f-wrap { position: relative; }
+        .reg-f-ico { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; opacity: .5; }
+        .reg-f-input { width: 100%; border: 1.5px solid var(--border); border-radius: 12px; padding: 11px 14px 11px 40px; font-size: 13.5px; font-family: 'Inter', sans-serif; color: var(--ink); background: var(--bg); outline: none; transition: all .18s; }
+        .reg-f-input::placeholder { color: #b0b9b4; }
+        .reg-f-input:hover { border-color: rgba(15,61,46,.2); }
+        .reg-f-input:focus { border-color: var(--forest-2); background: #fff; box-shadow: 0 0 0 3.5px rgba(182,245,0,.22); }
+
+        .reg-error-box { background: #fff5f5; border: 1px solid #fcc; border-radius: 12px; padding: 11px 15px; font-size: 13px; color: #c0392b; margin-bottom: 18px; display: none; }
+        .reg-error-box.show { display: block; }
+
+        .reg-submit { width: 100%; background: var(--forest); color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 14.5px; padding: 13px; border-radius: 12px; border: none; cursor: pointer; transition: all .2s; margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .reg-submit:hover:not(:disabled) { background: var(--ink); transform: translateY(-1px); box-shadow: 0 8px 22px rgba(15,61,46,.22); }
+        .reg-submit:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+        .reg-success-panel { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px 0; flex: 1; }
+        .reg-success-panel.show { display: flex; }
+        .reg-success-ring { width: 76px; height: 76px; border-radius: 50%; background: var(--lime-soft); border: 2px solid rgba(182,245,0,.45); display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 20px; animation: popIn .4s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes popIn { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .reg-success-panel h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.25rem; color: var(--forest); margin-bottom: 8px; }
+        .reg-success-panel p { color: var(--text-muted); font-size: 14px; line-height: 1.65; max-width: 300px; margin-bottom: 22px; }
+        .reg-success-pill { background: var(--lime-soft); border: 1px solid rgba(182,245,0,.4); border-radius: 999px; padding: 8px 22px; font-weight: 700; font-size: 13px; color: var(--forest); margin-bottom: 24px; display: inline-block; }
+        .btn-reg-done { background: var(--forest); color: #fff; border: none; border-radius: 12px; padding: 12px 36px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; text-decoration: none; display: inline-block; transition: all .2s; }
+        .btn-reg-done:hover { background: var(--ink); color: #fff; transform: translateY(-1px); }
+
+        @media (max-width: 760px) {
+            .reg-shell { flex-direction: column; max-height: 96vh; overflow-y: auto; }
+            .reg-left { flex: none; padding: 28px 24px; }
+            .reg-right { padding: 28px 24px; }
+        }
+
+        /* ══════════════════════════════════════════════
+           RESPONSIVE FIXES — TABLET & MOBILE
+        ══════════════════════════════════════════════ */
+
+        /* TABLET */
+        @media (max-width: 991.98px) {
+            .container { padding-left: 18px; padding-right: 18px; }
+            .card-custom { flex: 0 0 260px; }
+            .detail-shell { max-width: 92vw; }
+            .reg-shell { max-width: 92vw; }
+        }
+
+        /* MOBILE */
+        @media (max-width: 575.98px) {
+            .container { padding-left: 14px; padding-right: 14px; }
+
+            .header { margin: 24px 0 18px; }
+            .header h3 { font-size: 1.4rem; }
+            .header p { font-size: 0.88rem; }
+
+            /* Top bar: stack search + filters, full width */
+            .explore-topbar { padding: 14px; }
+            .explore-topbar .row { row-gap: 10px; }
+            .explore-topbar .col-md-5 { justify-content: flex-start !important; }
+            .filter-chip, #exploreClearBtn { padding: 6px 12px; font-size: 12px; }
+
+            /* Tabs: allow horizontal scroll instead of wrapping/breaking */
+            .nav-tabs { flex-wrap: nowrap; overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none; }
+            .nav-tabs::-webkit-scrollbar { display: none; }
+            .nav-tabs .nav-item { flex: 0 0 auto; }
+            .nav-tabs .nav-link { font-size: 13px; padding: 9px 14px; white-space: nowrap; }
+
+            .section-title { font-size: 1.05rem; margin: 26px 0 12px; }
+
+            /* Cards: Adjust grid gap for mobile */
+            .scroll-container { gap: 14px; padding-bottom: 12px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+            .card-img { height: 150px; }
+
+            /* Asset/Logo/Video grid: smaller min column so it doesn't overflow */
+            #attributes div[style*="grid-template-columns: repeat(auto-fill"] {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+                gap: 8px !important;
+            }
+
+            /* Detail modal */
+            .detail-overlay, .reg-overlay, .login-overlay { padding: 10px; }
+            .detail-shell, .reg-shell { max-width: 100%; width: 100%; border-radius: 16px; }
+            .detail-shell { max-height: 100%; }
+            .reg-shell { max-height: 100%; overflow-y: auto; }
+            .detail-hero-bottom { padding: 18px 18px 16px; }
+            .detail-meta-cell { padding: 12px; }
+            .detail-meta-val { font-size: 12.5px; }
+
+            /* Login modal */
+            .login-header { padding: 28px 22px 22px; }
+            .login-body { padding: 24px 22px 28px; }
+
+            /* Register modal right column tighter padding */
+            .reg-left { padding: 24px 20px; }
+            .reg-right { padding: 24px 20px; }
+        }
+
+        /* VERY SMALL PHONES */
+        @media (max-width: 360px) {
+            .card-custom { flex: 0 0 84vw; }
+            .header h3 { font-size: 1.25rem; }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-md navbar-dark">
+    <div class="container-fluid px-4">
+        <a href="/" class="navbar-brand brand-link">
+            <img class="brand-logo" src="{% static 'cms/pegadaian_logo.png' %}" alt="Logo">
+            <span>Digital Culture</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="d-flex align-items-center ms-auto gap-3 nav-links-container">
+                <a href="/" class="{% if request.path == '/' %}active-link{% endif %}">Home</a>
+                <a href="/explore/" class="{% if request.path == '/explore/' %}active-link{% endif %}">Explore</a>
+                <a href="/culture_performance/" class="{% if request.path == '/culture_performance/' %}active-link{% endif %}">Culture</a>
+                <a href="/business_performance/" class="{% if request.path == '/business_performance/' %}active-link{% endif %}">Business</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h3>Explore</h3>
+        <p>Temukan berbagai konten budaya perusahaan.</p>
+    </div>
+
+    <!-- TOP BAR -->
+    <div class="explore-topbar mb-3">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-7">
+                <div class="search-wrap">
+                    <span class="search-icon">⌕</span>
+                    <input id="exploreSearch" type="search" class="form-control search-input" placeholder="Cari event / news / playbook..." autocomplete="off">
+                </div>
+                <div class="small text-muted mt-1" id="exploreResultHint"></div>
+            </div>
+            <div class="col-md-5 d-flex gap-2 justify-content-md-end flex-wrap">
+                <button type="button" class="btn btn-sm filter-chip active" data-filter="all">All</button>
+                <button type="button" class="btn btn-sm filter-chip" data-filter="upcoming">Upcoming</button>
+                <button type="button" class="btn btn-sm filter-chip" data-filter="ongoing">Ongoing</button>
+                <button type="button" class="btn btn-sm filter-chip" data-filter="past">Past</button>
+                <button type="button" class="btn btn-sm" id="exploreClearBtn">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABS -->
+    <ul class="nav nav-tabs mb-4" id="exploreTabs">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#events">Events</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#news">News</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#attributes">Attributes</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+
+<!-- ================= EVENTS ================= -->
+<div class="tab-pane fade show active" id="events">
+
+    <div class="scroll-wrap">
+
+        <button class="scroll-btn left" type="button" data-scroll="left">‹</button>
+        <button class="scroll-btn right" type="button" data-scroll="right">›</button>
+
+        <div class="scroll-container" id="eventsScroller">
+
+            {% for event in events %}
+
+            <div class="card-custom"
+                 data-event-id="{{ event.event_id }}"
+                 data-status="{{ event.status }}"
+                 data-registration-open="{{ event.is_registration_open|yesno:'1,0' }}"
+                 data-date="{{ event.event_date|date:'Y-m-d' }}"
+                 data-start-time="{{ event.event_time|time:'H:i' }}"
+                 data-end-time="{{ event.end_time|time:'H:i' }}"
+                 data-title="{{ event.event_name }}"
+                 data-location="{{ event.location|default:'-' }}"
+                 data-time="{{ event.event_time|time:'H:i' }}{% if event.end_time %} - {{ event.end_time|time:'H:i' }}{% endif %}"
+                 data-rating="{{ event.rating|default:'' }}"
+                 data-description="{{ event.description|default:''|escape }}"
+                 data-cores="{% for core in event.core_values.all %}{{ core.core_value_name }}{% if not forloop.last %},{% endif %}{% endfor %}"
+                 data-image="{% if event.image_url %}/media/{{ event.image_url }}{% else %}https://picsum.photos/700/400?random={{ event.event_id }}{% endif %}"
+                 data-fulllink="{% url 'event_detail' event.event_id %}">
+
+                <!-- IMAGE -->
+                <img
+                    src="{% if event.image_url %}/media/{{ event.image_url }}{% else %}https://picsum.photos/400/300?random={{ event.event_id }}{% endif %}"
+                    class="card-img"
+                    onerror="this.onerror=null;this.src='https://picsum.photos/400/300?random={{ event.event_id }}'">
+
+                <!-- BODY -->
+                <div class="card-body">
+
+                    <h6>{{ event.event_name }}</h6>
+
+                    <p class="text-muted">{{ event.location }}</p>
+                    <p class="text-muted">{{ event.event_date }}</p>
+                    <p class="text-muted">{{ event.event_time }}{% if event.end_time %} - {{ event.end_time }}{% endif %}</p>
+
+                    <!-- RATING -->
+                    {% if event.rating %}
+                        <p class="rating">⭐ {{ event.rating }}</p>
+                    {% else %}
+                        {% if event.can_feedback %}
+                            <p class="text-muted small">Belum ada rating</p>
+                        {% endif %}
+                    {% endif %}
+
+                    <!-- BUTTONS -->
+                    <div class="card-buttons">
+
+                        <!-- DETAIL (opens popup modal, stays on Explore page) -->
+                        <button
+                            type="button"
+                            class="btn btn-success btn-sm btn-popup-detail"
+                            onclick="openDetailModal(this.closest('.card-custom'))">
+                            Detail
+                        </button>
+
+                        <!-- FEEDBACK -->
+                        {% if event.can_feedback %}
+                            {% if event.is_rated_by_session %}
+                                <button class="btn btn-secondary btn-sm" disabled>Sudah Rating</button>
+                            {% else %}
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="openFeedbackForEvent('{{ event.event_id }}')">Feedback</button>
+                            {% endif %}
+                        {% endif %}
+
+                    </div>
+
+                </div>
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= NEWS ================= -->
+<div class="tab-pane fade" id="news">
+
+    {% for edition in news_editions %}
+    {% with edition_news=edition.news.all %}
+    {% if edition_news %}
+
+    <div class="section-title">{{ edition.edition_name }}</div>
+
+    <div class="scroll-wrap">
+        <button class="scroll-btn left" type="button" data-scroll="left">‹</button>
+        <button class="scroll-btn right" type="button" data-scroll="right">›</button>
+
+        <div class="scroll-container">
+            {% for news in edition_news %}
+
+            <div class="card-custom">
+                <img src="{% if news.image_file %}{{ news.image_file.url }}{% elif news.image_url %}{{ news.image_url }}{% else %}https://picsum.photos/400/300?random={{ news.news_id }}{% endif %}"
+                     class="card-img"
+                     data-gdrive="{% if news.image_url %}{{ news.image_url }}{% endif %}"
+                     onerror="this.src='https://picsum.photos/400/300?random={{ news.news_id }}'">
+
+                <div class="card-body">
+                    <h6>{{ news.title }}</h6>
+                    <p class="text-muted">{{ news.created_at|date:"d M Y" }}</p>
+                    <div class="card-buttons">
+                        {% if news.image_file or news.image_url %}
+                        <a href="{% url 'redirect_news' news.news_id %}" class="btn btn-outline-success btn-sm" target="_blank">
+                            Buka Poster
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+        </div>
+    </div>
+
+    {% endif %}
+    {% endwith %}
+    {% endfor %}
+
+    <!-- News tanpa edition (edition_id NULL / edition sudah dihapus) -->
+    {% if news_no_edition %}
+
+    <div class="section-title">Tanpa Edisi</div>
+
+    <div class="scroll-wrap">
+        <button class="scroll-btn left" type="button" data-scroll="left">‹</button>
+        <button class="scroll-btn right" type="button" data-scroll="right">›</button>
+
+        <div class="scroll-container">
+            {% for news in news_no_edition %}
+
+            <div class="card-custom">
+                <img src="{% if news.image_file %}{{ news.image_file.url }}{% elif news.image_url %}{{ news.image_url }}{% else %}https://picsum.photos/400/300?random={{ news.news_id }}{% endif %}"
+                     class="card-img"
+                     data-gdrive="{% if news.image_url %}{{ news.image_url }}{% endif %}"
+                     onerror="this.src='https://picsum.photos/400/300?random={{ news.news_id }}'">
+
+                <div class="card-body">
+                    <h6>{{ news.title }}</h6>
+                    <p class="text-muted">{{ news.created_at|date:"d M Y" }}</p>
+                    <div class="card-buttons">
+                        {% if news.image_file or news.image_url %}
+                        <a href="{% url 'redirect_news' news.news_id %}" class="btn btn-outline-success btn-sm" target="_blank">
+                            Buka Poster
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+        </div>
+    </div>
+
+    {% endif %}
+
+</div><!-- /tab-pane#news -->
+
+        <!-- ================= ATTRIBUTES ================= -->
+        <div class="tab-pane fade" id="attributes">
+
+           <!-- PLAYBOOK -->
+{% if playbooks %}
+<div class="section-title">Playbook</div>
+<div class="scroll-wrap">
+    <button class="scroll-btn left" type="button" data-scroll="left">‹</button>
+    <button class="scroll-btn right" type="button" data-scroll="right">›</button>
+    <div class="scroll-container">
+        {% for item in playbooks %}
+        <div class="card-custom">
+            <div style="height:170px; overflow:hidden; position:relative; background:#f0f0f0;">
+                <iframe
+                    src="{{ item.file_url }}"
+                    style="width:100%; height:340px; border:none; transform:scale(0.5); transform-origin:top left; pointer-events:none;"
+                    loading="lazy"
+                    scrolling="no">
+                </iframe>
+                <!-- overlay agar tidak bisa diklik langsung -->
+                <div style="position:absolute; inset:0;"></div>
+            </div>
+            <div class="card-body">
+                <h6>{{ item.attribute_name }}</h6>
+                <p class="text-muted">{{ item.created_at|date:"d M Y" }}</p>
+                <div class="card-buttons">
+                    <a href="{{ item.file_url }}" class="btn btn-success btn-sm" target="_blank">Baca</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+            <!-- POSTER -->
+{% if posters %}
+<div class="section-title">Poster</div>
+<div class="scroll-wrap">
+    <button class="scroll-btn left" type="button" data-scroll="left">‹</button>
+    <button class="scroll-btn right" type="button" data-scroll="right">›</button>
+    <div class="scroll-container">
+        {% for item in posters %}
+        <div class="card-custom">
+            <img src="https://picsum.photos/400/300?{{ item.attribute_id }}"
+                 data-gdrive="{{ item.file_url }}"
+                 class="card-img" alt="{{ item.attribute_name }}"
+                 onerror="this.src='https://picsum.photos/400/300?{{ item.attribute_id }}'">
+            <div class="card-body">
+                <h6>{{ item.attribute_name }}</h6>
+                <p class="text-muted">{{ item.created_at|date:"d M Y" }}</p>
+                <div class="card-buttons">
+                    <a href="{{ item.file_url }}" class="btn btn-success btn-sm" target="_blank">Lihat Poster</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+            <!-- ASSET + LOGO + VIDEO -->
+{% if assets or logos or videos %}
+<div class="section-title">Asset, Logo & Video</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 24px;">
+
+    {% for item in assets %}
+    <a href="{{ item.file_url }}" target="_blank"
+       class="btn btn-sm"
+       style="background:#0F3D2E; color:white; border-radius:14px; padding: 14px 16px; text-align:center; white-space:normal; line-height:1.3; font-weight:600; border:1px solid rgba(15,61,46,0.08); box-shadow: 0 6px 18px rgba(15,61,46,0.08); transition: all 0.2s ease;">
+        {{ item.attribute_name }}
+    </a>
+    {% endfor %}
+
+    {% for item in logos %}
+    <a href="{{ item.file_url }}" target="_blank"
+       class="btn btn-sm"
+       style="background:#0F3D2E; color:white; border-radius:14px; padding: 14px 16px; text-align:center; white-space:normal; line-height:1.3; font-weight:600; border:1px solid rgba(15,61,46,0.08); box-shadow: 0 6px 18px rgba(15,61,46,0.08); transition: all 0.2s ease;">
+        {{ item.attribute_name }}
+    </a>
+    {% endfor %}
+
+    {% for item in videos %}
+    <a href="{{ item.file_url }}" target="_blank"
+       class="btn btn-sm"
+       style="background:#0F3D2E; color:white; border-radius:14px; padding: 14px 16px; text-align:center; white-space:normal; line-height:1.3; font-weight:600; border:1px solid rgba(15,61,46,0.08); box-shadow: 0 6px 18px rgba(15,61,46,0.08); transition: all 0.2s ease;">
+        {{ item.attribute_name }}
+    </a>
+    {% endfor %}
+
+</div>
+{% endif %}
+
+            {% if not playbooks and not posters and not assets and not logos and not videos %}
+            <p class="text-muted mt-3">Belum ada attribute tersedia.</p>
+            {% endif %}
+
+        </div><!-- /tab-pane#attributes -->
+
+    </div><!-- /tab-content -->
+</div><!-- /container -->
+
+{% include 'cms/footer_contact.html' %}
+
+
+<!-- ══════════════════════════════════════════════
+     DETAIL MODAL — popup, isi diambil dari data-* card, tanpa reload
+══════════════════════════════════════════════ -->
+<div class="detail-overlay" id="detailOverlay" aria-hidden="true">
+    <div class="detail-shell" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle">
+
+        <div class="detail-hero">
+            <img id="detailModalImg" src="" alt="">
+            <div class="detail-hero-scrim"></div>
+            <button type="button" class="detail-close-btn" onclick="closeDetailModal()" aria-label="Tutup">✕</button>
+            <div class="detail-hero-bottom">
+                <div class="detail-cores" id="detailModalCores"></div>
+                <h2 class="detail-title" id="detailModalTitle">—</h2>
+            </div>
+        </div>
+
+        <div class="detail-body">
+
+            <div class="detail-meta-grid">
+                <div class="detail-meta-cell">
+                    <div class="detail-meta-icon">📅</div>
+                    <div>
+                        <div class="detail-meta-label">Tanggal</div>
+                        <div class="detail-meta-val" id="detailModalDate">—</div>
+                    </div>
+                </div>
+                <div class="detail-meta-cell">
+                    <div class="detail-meta-icon">⏰</div>
+                    <div>
+                        <div class="detail-meta-label">Waktu</div>
+                        <div class="detail-meta-val" id="detailModalTime">—</div>
+                    </div>
+                </div>
+                <div class="detail-meta-cell">
+                    <div class="detail-meta-icon">📍</div>
+                    <div>
+                        <div class="detail-meta-label">Lokasi</div>
+                        <div class="detail-meta-val" id="detailModalLocation">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="detailModalRatingBox" style="display:none;">
+                <div class="detail-rating-pill">⭐ <span id="detailModalRating">—</span></div>
+            </div>
+
+            <div class="detail-sec-title">Tentang Event</div>
+            <p class="detail-desc" id="detailModalDesc">—</p>
+
+        </div>
+
+        <div class="detail-footer">
+            <a href="#" id="detailModalFullLink" class="detail-fulllink" target="_blank">
+                Buka di halaman penuh →
+            </a>
+            <button type="button" class="btn-daftar-detail" id="detailModalDaftarBtn">
+                Daftar Sekarang →
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     REGISTER MODAL — muncul di atas Detail Modal, bisa "Kembali ke Detail"
+══════════════════════════════════════════════ -->
+<div class="reg-overlay" id="regOverlay" aria-hidden="true">
+    <div class="reg-shell" role="dialog" aria-modal="true" aria-labelledby="regTitle">
+
+        <!-- left -->
+        <div class="reg-left">
+            <div class="reg-left-top">
+                <button type="button" class="reg-back-link" onclick="backToDetailFromReg()">← Kembali ke Detail</button>
+                <span class="reg-pill">Pegadaian Digital Culture</span>
+                <h3 id="regTitle">—</h3>
+                <p>Daftarkan diri Anda dan jadilah bagian dari komunitas digital Pegadaian.</p>
+            </div>
+            <div class="reg-meta-list">
+                <div class="reg-meta-item">
+                    <div class="reg-meta-icon">📅</div>
+                    <div>
+                        <div class="reg-meta-label">Tanggal</div>
+                        <div class="reg-meta-val" id="regMetaDate">—</div>
+                    </div>
+                </div>
+                <div class="reg-meta-item">
+                    <div class="reg-meta-icon">⏰</div>
+                    <div>
+                        <div class="reg-meta-label">Waktu</div>
+                        <div class="reg-meta-val" id="regMetaTime">—</div>
+                    </div>
+                </div>
+                <div class="reg-meta-item">
+                    <div class="reg-meta-icon">📍</div>
+                    <div>
+                        <div class="reg-meta-label">Lokasi</div>
+                        <div class="reg-meta-val" id="regMetaLocation">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- right -->
+        <div class="reg-right">
+            <div class="reg-top-row" id="regHeaderRow">
+                <div>
+                    <h4>Form Pendaftaran</h4>
+                    <p>Isi data dengan lengkap dan benar</p>
+                </div>
+                <button type="button" class="reg-close-btn" onclick="closeRegModal()" aria-label="Tutup">✕</button>
+            </div>
+
+            <div class="reg-error-box" id="regErrorBox">
+                <ul id="regErrorList" class="mb-0 ps-3"></ul>
+            </div>
+
+            <form id="regForm" method="POST" novalidate>
+                <input type="hidden" name="csrfmiddlewaretoken" id="regCsrfToken" value="{{ csrf_token }}">
+                <div class="reg-f-row">
+                    <div class="reg-f-group">
+                        <label class="reg-f-label" for="r-nama">Nama Lengkap</label>
+                        <div class="reg-f-wrap">
+                            <span class="reg-f-ico">👤</span>
+                            <input type="text" id="r-nama" name="full_name" class="reg-f-input" placeholder="Nama sesuai KTP" required>
+                        </div>
+                    </div>
+                    <div class="reg-f-group">
+                        <label class="reg-f-label" for="r-email">Email</label>
+                        <div class="reg-f-wrap">
+                            <span class="reg-f-ico">✉️</span>
+                            <input type="email" id="r-email" name="email" class="reg-f-input" placeholder="nama@perusahaan.com" required>
+                        </div>
+                    </div>
+                </div>
+                                <div class="reg-f-row">
+                    <div class="reg-f-group">
+                        <label class="reg-f-label" for="r-province">Provinsi <span class="opt">(opsional)</span></label>
+                        <div class="reg-f-wrap">
+                            <span class="reg-f-ico">📍</span>
+                            <input type="text" id="r-province" name="province" class="reg-f-input" list="provinsi-list" placeholder="Pilih / ketik provinsi">
+                        </div>
+                    </div>
+                    <div class="reg-f-group">
+                        <label class="reg-f-label" for="r-territory">Territory / Region <span class="opt">(opsional)</span></label>
+                        <div class="reg-f-wrap">
+                            <span class="reg-f-ico">🗺️</span>
+                            <input type="text" id="r-territory" name="territory" class="reg-f-input" placeholder="Wilayah / kanwil">
+                        </div>
+                    </div>
+                </div>
+<div class="reg-f-row">
+                    <div class="reg-f-group">
+                        <label class="reg-f-label" for="r-phone">No. HP <span class="opt"></span></label>
+                        <div class="reg-f-wrap">
+                            <span class="reg-f-ico">📱</span>
+                            <input type="tel" id="r-phone" name="phone" class="reg-f-input" placeholder="08xxxxxxxxxx">
+                        </div>
+                    </div>
+                    <div class="reg-f-group">
+                        <label class="reg-f-label" for="r-instansi">Instansi <span class="opt">(opsional)</span></label>
+                        <div class="reg-f-wrap">
+                            <span class="reg-f-ico">🏢</span>
+                            <input type="text" id="r-instansi" name="organization" class="reg-f-input" placeholder="Unit kerja / perusahaan">
+                        </div>
+                    </div>
+                </div>
+            <datalist id="provinsi-list">
+                <option value="Aceh"></option>
+                <option value="Sumatera Utara"></option>
+                <option value="Sumatera Barat"></option>
+                <option value="Riau"></option>
+                <option value="Kepulauan Riau"></option>
+                <option value="Jambi"></option>
+                <option value="Sumatera Selatan"></option>
+                <option value="Kepulauan Bangka Belitung"></option>
+                <option value="Bengkulu"></option>
+                <option value="Lampung"></option>
+                <option value="DKI Jakarta"></option>
+                <option value="Jawa Barat"></option>
+                <option value="Banten"></option>
+                <option value="Jawa Tengah"></option>
+                <option value="DI Yogyakarta"></option>
+                <option value="Jawa Timur"></option>
+                <option value="Bali"></option>
+                <option value="Nusa Tenggara Barat"></option>
+                <option value="Nusa Tenggara Timur"></option>
+                <option value="Kalimantan Barat"></option>
+                <option value="Kalimantan Tengah"></option>
+                <option value="Kalimantan Selatan"></option>
+                <option value="Kalimantan Timur"></option>
+                <option value="Kalimantan Utara"></option>
+                <option value="Sulawesi Utara"></option>
+                <option value="Gorontalo"></option>
+                <option value="Sulawesi Tengah"></option>
+                <option value="Sulawesi Barat"></option>
+                <option value="Sulawesi Selatan"></option>
+                <option value="Sulawesi Tenggara"></option>
+                <option value="Maluku"></option>
+                <option value="Maluku Utara"></option>
+                <option value="Papua"></option>
+                <option value="Papua Barat"></option>
+                <option value="Papua Selatan"></option>
+                <option value="Papua Tengah"></option>
+                <option value="Papua Pegunungan"></option>
+                <option value="Papua Barat Daya"></option>
+            </datalist>
+                <button type="submit" class="reg-submit" id="regSubmitBtn">
+                    <span id="regSubmitLabel">Kirim Pendaftaran</span> <span id="regArrow">→</span>
+                </button>
+            </form>
+
+            <!-- success -->
+            <div class="reg-success-panel" id="regSuccess">
+                <div class="reg-success-ring">✓</div>
+                <h3>Pendaftaran Berhasil!</h3>
+                <p>Anda telah terdaftar. Persiapkan diri untuk pengalaman terbaik.</p>
+                <div class="reg-success-pill" id="regSuccessName">—</div>
+                <div style="font-size:13px;color:var(--text-muted);margin-bottom:28px;">
+                    📅 <span id="regSuccessDate" style="font-weight:700;color:var(--ink);">—</span>
+                </div>
+                <button type="button" class="btn-reg-done" onclick="closeRegModal()">Selesai</button>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:20px;padding-top:18px;border-top:1px solid var(--border);" id="regFooterNote">
+                <span style="font-size:12px;color:var(--text-muted);">🔒 Data Anda terlindungi</span>
+                <span style="font-size:12px;color:var(--text-muted);">Pegadaian Digital Culture</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="login-overlay" id="loginOverlay" aria-hidden="true">
+    <div class="login-modal">
+
+        <div class="login-header">
+            <div class="login-logo">
+                <img src="{% static 'cms/pegadaian_logo.png' %}" alt="Logo">
+            </div>
+            <h3>Selamat Datang Kembali</h3>
+            <p>Masuk ke Dashboard Digital Culture Pegadaian</p>
+        </div>
+
+        <div class="login-body">
+            <div class="login-close-row">
+                <div style="font-size: 13px; color: var(--text-muted);">Masukkan kredensial Anda</div>
+                <button class="login-close-btn" onclick="closeLoginModal()" aria-label="Tutup">✕</button>
+            </div>
+
+            <div class="login-error" id="loginError">Username atau password salah. Silakan coba lagi.</div>
+
+            <form id="loginForm" method="POST" action="{% url 'admin_login' %}" novalidate>
+                {% csrf_token %}
+                <div style="margin-bottom: 16px;">
+                    <label class="login-label" for="login-username">Username</label>
+                    <input type="text" id="login-username" name="username" class="login-input"
+                        placeholder="Masukkan username Anda" required autocomplete="username">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label class="login-label" for="login-password">Password</label>
+                    <input type="password" id="login-password" name="password" class="login-input"
+                        placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="login-submit" id="loginSubmitBtn">Masuk ke Dashboard</button>
+            </form>
+
+            <div class="login-divider" style="margin-top: 20px;">
+                Butuh bantuan? Hubungi <a href="mailto:budaya.kerja.pusat@pegadaian.co.id"
+                    style="color: var(--forest); font-weight: 600; text-decoration: none;">tim IT</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- FEEDBACK WIDGET -->
+{% include 'cms/feedback.html' %}
+
+<!-- ===================== SCRIPTS ===================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* ─── HELPERS ─────────────────────────────────── */
+    function normalize(s) { return (s || "").toLowerCase().trim(); }
+
+    function getEventPhase(card) {
+        // Source of truth is the backend lifecycle status (kept fresh by
+        // auto_update_event_statuses() on every explore() request), not a
+        // client-side recompute from date/time. Users only ever see three
+        // phases: upcoming, ongoing, past — draft/archived events never
+        // reach this page in the first place.
+        const status = (card.getAttribute("data-status") || "").toLowerCase();
+        switch (status) {
+            case "published": return "upcoming";
+            case "ongoing":   return "ongoing";
+            case "completed": return "past";
+            default:          return "upcoming";
+        }
+    }
+
+    function formatDisplayDate(dateStr) {
+        if (!dateStr || !dateStr.includes("-")) return dateStr || "-";
+        const [y, m, d] = dateStr.split("-");
+        const months = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+        return `${parseInt(d)} ${months[parseInt(m) - 1]} ${y}`;
+    }
+
+    /* ─── BADGE + FEEDBACK BUTTON ─────────────────── */
+    function initEventCards() {
+        document.querySelectorAll("#events .card-custom[data-date]").forEach(card => {
+            const phase = getEventPhase(card);
+
+            let badge = card.querySelector(".card-badge");
+            if (!badge) {
+                badge = document.createElement("div");
+                card.prepend(badge);
+            }
+            badge.className = "card-badge " + (phase === "past" ? "badge-past" : phase === "ongoing" ? "badge-ongoing" : "badge-upcoming");
+            badge.textContent = phase === "ongoing" ? "Ongoing" : phase === "past" ? "Past" : "Upcoming";
+
+            const fb = card.querySelector(".feedback-btn");
+            if (fb) fb.style.display = phase === "past" ? "inline-block" : "none";
+        });
+    }
+
+    /* ─── FILTER & SEARCH ─────────────────────────── */
+    const searchEl  = document.getElementById("exploreSearch");
+    const hintEl    = document.getElementById("exploreResultHint");
+    const clearBtn  = document.getElementById("exploreClearBtn");
+    const chips     = Array.from(document.querySelectorAll(".filter-chip"));
+    let currentFilter = "all";
+
+    function getActiveTabId() {
+        const active = document.querySelector('#exploreTabs .nav-link.active');
+        return active ? active.getAttribute("data-bs-target").replace("#", "") : "events";
+    }
+
+    function applyFilters() {
+        const tabId = getActiveTabId();
+        const pane  = document.getElementById(tabId);
+        if (!pane) return;
+
+        const q = normalize(searchEl.value);
+        const cards = Array.from(pane.querySelectorAll(".card-custom"));
+        let visible = 0;
+
+        cards.forEach(card => {
+            const text = normalize(card.textContent);
+            const matchesQuery = !q || text.includes(q);
+
+            let matchesChip = true;
+            if (tabId === "events" && currentFilter !== "all") {
+                const phase = getEventPhase(card);
+                matchesChip = phase === currentFilter;
+            }
+
+            const show = matchesQuery && matchesChip;
+            card.classList.toggle("hidden", !show);
+            if (show) visible++;
+        });
+
+        const label = tabId.charAt(0).toUpperCase() + tabId.slice(1);
+        hintEl.textContent = q
+            ? `${visible} hasil di ${label} untuk "${searchEl.value}"`
+            : `${visible} item di ${label}`;
+    }
+
+    searchEl.addEventListener("input", applyFilters);
+
+    clearBtn.addEventListener("click", () => {
+        searchEl.value = "";
+        applyFilters();
+        searchEl.focus();
+    });
+
+    chips.forEach(chip => {
+        chip.addEventListener("click", () => {
+            chips.forEach(c => c.classList.remove("active"));
+            chip.classList.add("active");
+            currentFilter = chip.getAttribute("data-filter") || "all";
+            applyFilters();
+        });
+    });
+
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(btn => {
+        btn.addEventListener("shown.bs.tab", applyFilters);
+    });
+
+    /* ─── SCROLL BUTTONS ──────────────────────────── */
+    document.querySelectorAll(".scroll-wrap").forEach(wrap => {
+        const scroller = wrap.querySelector(".scroll-container");
+        if (!scroller) return;
+        wrap.querySelectorAll(".scroll-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const delta = btn.getAttribute("data-scroll") === "left" ? -320 : 320;
+                scroller.scrollBy({ left: delta, behavior: "smooth" });
+            });
+        });
+    });
+
+    /* ─── INIT ────────────────────────────────────── */
+    initEventCards();
+    applyFilters();
+    convertGDriveImages();
+    // Keep cards accurate if an event changes phase while this page remains open.
+    window.setInterval(() => {
+        initEventCards();
+        applyFilters();
+    }, 30000);
+
+    /* ─── OPEN FEEDBACK WIDGET FOR SPECIFIC EVENT ─── */
+    window.openFeedbackForEvent = function(eventId) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('event_id', eventId);
+        window.history.replaceState({}, '', url);
+        if (typeof toggleChatWidget === 'function') toggleChatWidget(eventId);
+    };
+
+    /* ─── GDRIVE IMAGE CONVERTER ──────────────────── */
+    function convertGDriveImages() {
+        document.querySelectorAll("img[data-gdrive]").forEach(img => {
+            const url = img.getAttribute("data-gdrive");
+            if (!url) return;
+
+            let fileId = null;
+            const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (m1) fileId = m1[1];
+            const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (!fileId && m2) fileId = m2[1];
+
+            if (fileId) {
+                img.src = `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`;
+            }
+        });
+    }
+
+    /* ═══════════════════════════════════════════════
+       DETAIL MODAL — popup di atas halaman Explore,
+       diisi dari data-* milik card yang diklik (tanpa reload)
+    ═══════════════════════════════════════════════ */
+    const detailOverlay     = document.getElementById("detailOverlay");
+    const detailImg         = document.getElementById("detailModalImg");
+    const detailTitle       = document.getElementById("detailModalTitle");
+    const detailLocation    = document.getElementById("detailModalLocation");
+    const detailDate        = document.getElementById("detailModalDate");
+    const detailTime        = document.getElementById("detailModalTime");
+    const detailDesc        = document.getElementById("detailModalDesc");
+    const detailRatingBox   = document.getElementById("detailModalRatingBox");
+    const detailRating      = document.getElementById("detailModalRating");
+    const detailCores       = document.getElementById("detailModalCores");
+    const detailFullLink    = document.getElementById("detailModalFullLink");
+    const detailDaftarBtn   = document.getElementById("detailModalDaftarBtn");
+
+    let lastFocusedBeforeDetail = null;
+    let currentEventData = null;
+
+    window.openDetailModal = function (cardEl) {
+        if (!cardEl) return;
+
+        const data = {
+            eventId:     cardEl.getAttribute("data-event-id"),
+            title:       cardEl.getAttribute("data-title") || "Detail Event",
+            location:    cardEl.getAttribute("data-location") || "-",
+            dateStr:     cardEl.getAttribute("data-date") || "",
+            time:        cardEl.getAttribute("data-time") || "-",
+            rating:      cardEl.getAttribute("data-rating") || "",
+            description: cardEl.getAttribute("data-description") || "Belum ada deskripsi untuk event ini.",
+            cores:       cardEl.getAttribute("data-cores") || "",
+            image:       cardEl.getAttribute("data-image") || "",
+            fullLink:    cardEl.getAttribute("data-fulllink") || "#",
+        };
+        currentEventData = data;
+
+        detailTitle.textContent    = data.title;
+        detailLocation.textContent = data.location;
+        detailDate.textContent     = formatDisplayDate(data.dateStr);
+        detailTime.textContent     = data.time;
+        detailDesc.textContent     = data.description;
+        detailImg.src              = data.image;
+        detailImg.alt              = data.title;
+        detailFullLink.href        = data.fullLink;
+
+        detailCores.innerHTML = "";
+        if (data.cores) {
+            data.cores.split(",").map(c => c.trim()).filter(Boolean).forEach(c => {
+                const span = document.createElement("span");
+                span.className = "badge-core-modal";
+                span.textContent = c;
+                detailCores.appendChild(span);
+            });
+        }
+
+        const phase = getEventPhase(cardEl);
+        const registrationOpen = cardEl.getAttribute("data-registration-open") === "1";
+
+        if (phase === "past") {
+            detailRatingBox.style.display = "";
+            detailRating.textContent = data.rating ? data.rating : "Belum ada rating";
+        } else {
+            detailRatingBox.style.display = "none";
+        }
+
+        // Daftar button follows the server-side registration flag (status +
+        // registration deadline), not just "is this event in the past".
+        detailDaftarBtn.style.display = registrationOpen ? "" : "none";
+
+        lastFocusedBeforeDetail = document.activeElement;
+        detailOverlay.classList.add("open");
+        detailOverlay.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            detailOverlay.classList.add("visible");
+        }));
+    };
+
+    window.closeDetailModal = function () {
+        detailOverlay.classList.remove("visible");
+        detailOverlay.setAttribute("aria-hidden", "true");
+        setTimeout(() => {
+            detailOverlay.classList.remove("open");
+            // Only restore body scroll if register modal isn't also open
+            if (!regOverlay.classList.contains("open")) {
+                document.body.style.overflow = "";
+            }
+            if (lastFocusedBeforeDetail) lastFocusedBeforeDetail.focus();
+        }, 260);
+    };
+
+    detailOverlay.addEventListener("click", function (e) {
+        if (e.target === detailOverlay) closeDetailModal();
+    });
+
+    /* ═══════════════════════════════════════════════
+       REGISTER MODAL — muncul DI ATAS Detail Modal (stacked).
+       User bisa "Kembali ke Detail" tanpa kehilangan context.
+    ═══════════════════════════════════════════════ */
+    const regOverlay   = document.getElementById("regOverlay");
+    const regForm      = document.getElementById("regForm");
+    const regSubmitBtn = document.getElementById("regSubmitBtn");
+    const regSubmitLbl = document.getElementById("regSubmitLabel");
+    const regArrow     = document.getElementById("regArrow");
+    const regErrBox     = document.getElementById("regErrorBox");
+    const regErrList    = document.getElementById("regErrorList");
+    const regSuccessEl  = document.getElementById("regSuccess");
+    const regHeaderRow  = document.getElementById("regHeaderRow");
+    const regFooterNote = document.getElementById("regFooterNote");
+
+    function resetRegModalToForm() {
+        regForm.style.display = "";
+        regSuccessEl.classList.remove("show");
+        regErrBox.classList.remove("show");
+        regHeaderRow.style.display = "";
+        regFooterNote.style.display = "";
+        regForm.reset();
+    }
+
+    function openRegModalForCurrentEvent() {
+        if (!currentEventData) return;
+        resetRegModalToForm();
+
+        document.getElementById("regTitle").textContent = currentEventData.title;
+        document.getElementById("regMetaDate").textContent = formatDisplayDate(currentEventData.dateStr);
+        document.getElementById("regMetaTime").textContent = currentEventData.time;
+        document.getElementById("regMetaLocation").textContent = currentEventData.location;
+
+        const csrfInput = document.querySelector('#loginForm [name=csrfmiddlewaretoken]');
+        regForm.action = `/event/${currentEventData.eventId}/register/`;
+        document.getElementById("regCsrfToken").value = csrfInput ? csrfInput.value : document.getElementById("regCsrfToken").value;
+
+        regOverlay.classList.add("open");
+        regOverlay.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            regOverlay.classList.add("visible");
+        }));
+        const firstInput = document.getElementById("r-nama");
+        if (firstInput) setTimeout(() => firstInput.focus(), 280);
+    }
+
+    detailDaftarBtn.addEventListener("click", openRegModalForCurrentEvent);
+
+    window.closeRegModal = function () {
+        regOverlay.classList.remove("visible");
+        regOverlay.setAttribute("aria-hidden", "true");
+        setTimeout(() => {
+            regOverlay.classList.remove("open");
+            resetRegModalToForm();
+            // Close everything together — back to Explore page
+            closeDetailModal();
+        }, 260);
+    };
+
+    window.backToDetailFromReg = function () {
+        regOverlay.classList.remove("visible");
+        regOverlay.setAttribute("aria-hidden", "true");
+        setTimeout(() => {
+            regOverlay.classList.remove("open");
+            resetRegModalToForm();
+            // Detail modal stays open underneath — body scroll lock remains
+        }, 260);
+    };
+
+    regOverlay.addEventListener("click", function (e) {
+        if (e.target === regOverlay) closeRegModal();
+    });
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key !== "Escape") return;
+        if (regOverlay.classList.contains("open")) {
+            backToDetailFromReg();
+        } else if (detailOverlay.classList.contains("open")) {
+            closeDetailModal();
+        }
+    });
+
+    function showRegFieldErrors(errors) {
+        regErrList.innerHTML = "";
+        errors.forEach(msg => {
+            const li = document.createElement("li");
+            li.textContent = msg;
+            regErrList.appendChild(li);
+        });
+        regErrBox.classList.add("show");
+        regErrBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function showRegSuccess(data) {
+        regForm.style.display = "none";
+        regHeaderRow.style.display = "none";
+        regFooterNote.style.display = "none";
+        document.getElementById("regSuccessName").textContent = data.event_name || "—";
+        document.getElementById("regSuccessDate").textContent = data.event_date || "—";
+        regSuccessEl.classList.add("show");
+    }
+
+    regForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        regSubmitBtn.disabled = true;
+        regSubmitLbl.textContent = "Memproses";
+        regArrow.style.animation = "spin 1s linear infinite";
+        regArrow.textContent = "⟳";
+
+        try {
+            const res = await fetch(regForm.action, {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": document.getElementById("regCsrfToken").value,
+                },
+                body: new FormData(regForm),
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                showRegFieldErrors(data.errors || ["Terjadi kesalahan. Coba lagi."]);
+            } else {
+                regErrBox.classList.remove("show");
+                showRegSuccess(data);
+            }
+        } catch (err) {
+            showRegFieldErrors(["Koneksi gagal. Periksa jaringan Anda."]);
+        } finally {
+            regSubmitBtn.disabled = false;
+            regSubmitLbl.textContent = "Kirim Pendaftaran";
+            regArrow.style.animation = "";
+            regArrow.textContent = "→";
+        }
+    });
+
+});
+</script>
+
+<!-- LOGIN MODAL SCRIPT -->
+<script>
+window.openLoginModal = function () {
+    const overlay = document.getElementById("loginOverlay");
+    overlay.classList.add("open");
+    overlay.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        overlay.classList.add("visible");
+    }));
+};
+window.closeLoginModal = function () {
+    const overlay = document.getElementById("loginOverlay");
+    overlay.classList.remove("visible");
+    overlay.setAttribute("aria-hidden", "true");
+    setTimeout(() => {
+        overlay.classList.remove("open");
+        document.body.style.overflow = "";
+    }, 260);
+};
+document.getElementById("loginOverlay").addEventListener("click", function (e) {
+    if (e.target === this) closeLoginModal();
+});
+
+document.getElementById("loginForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const btn = document.getElementById("loginSubmitBtn");
+    const errorEl = document.getElementById("loginError");
+    btn.disabled = true;
+    btn.textContent = "Memproses...";
+    errorEl.classList.remove("show");
+
+    try {
+        const res = await fetch(this.action, {
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRFToken": this.querySelector("[name=csrfmiddlewaretoken]").value
+            },
+            body: new FormData(this),
+            redirect: "manual"
+        });
+
+        if (res.type === "opaqueredirect" || res.redirected || res.status === 302 || res.status === 200) {
+            let data = null;
+            try { data = await res.json(); } catch (_) {}
+
+            if (data && data.error) {
+                errorEl.classList.add("show");
+            } else if (data && data.redirect) {
+                window.location.href = data.redirect;
+            } else {
+                window.location.href = "/admin-home/";
+            }
+        } else {
+            errorEl.classList.add("show");
+        }
+    } catch (err) {
+        window.location.href = "/admin-home/";
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Masuk ke Dashboard";
+    }
+});
+</script>
+
+</body>
+</html>

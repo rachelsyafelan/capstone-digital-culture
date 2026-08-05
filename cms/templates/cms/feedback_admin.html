@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* ===== CSS VARIABLES ===== */
+        :root {
+            --ink: #0B1F17;
+            --forest: #0F3D2E;
+            --forest-2: #14543D;
+            --lime: #B6F500;
+            --lime-soft: #E9FFB0;
+            --bg: #F6F8F6;
+            --card: #FFFFFF;
+            --text-muted: #6B7A73;
+            --border: rgba(15,61,46,0.08);
+            --radius-lg: 28px;
+            --radius-md: 20px;
+            --radius-sm: 14px;
+            --shadow-soft: 0 8px 24px rgba(15,61,46,0.06);
+            --shadow-card: 0 14px 40px rgba(15,61,46,0.10);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #F4F8F5;
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: min(1320px, 92%);
+            margin: 32px auto;
+            padding-bottom: 40px;
+        }
+
+        /* Hero — sized to match admin.html's hero */
+        .hero {
+            background: linear-gradient(135deg, #013320, #016632 130%);
+            padding: 34px 38px;
+            border-radius: 28px;
+            margin-bottom: 26px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 14px 40px rgba(15,61,46,0.10);
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute; top: -50px; right: -50px;
+            width: 180px; height: 180px; background: #A6F24A; opacity: 0.15; border-radius: 50%;
+        }
+
+        .hero h1, .hero p { position: relative; color: #fff; }
+
+        .hero h1 {
+            font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif;
+            font-size: 25px;
+            font-weight: 800;
+            letter-spacing: -0.4px;
+        }
+
+        .hero p {
+            font-size: 13.5px;
+            margin-top: 6px;
+            opacity: 0.9;
+            max-width: 480px;
+        }
+
+        /* ===== FILTER SECTION ===== */
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 10px 166px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(1, 102, 50, 0.15);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            color: #1e293b;
+            font-size: 13px;
+            outline: none;
+            min-width: 180px;
+            cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .filter-select:hover,
+        .filter-select:focus {
+            border-color: #016632;
+            box-shadow: 0 4px 12px rgba(1, 102, 50, 0.1);
+        }
+
+        /* ===== SENTIMENT CARDS — sized to match admin.html's stat-tile ===== */
+        .sentiment {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 22px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            box-shadow: 0 8px 24px rgba(15,61,46,0.06);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 40px rgba(15,61,46,0.10);
+        }
+
+        .card h4 {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .card h2 {
+            font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif;
+            margin-top: 6px;
+            font-size: 27px;
+            font-weight: 800;
+            letter-spacing: -0.4px;
+        }
+
+        .percent {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #64748b;
+        }
+
+        .positive { color: #16a34a; }
+        .neutral { color: #f59e0b; }
+        .negative { color: #ef4444; }
+
+        /* ===== DASHBOARD ROWS ===== */
+        .dashboard-row-top {
+            display: grid;
+            grid-template-columns: 1fr 1.6fr;
+            gap: 18px;
+            margin-bottom: 20px;
+            align-items: stretch;
+        }
+
+        .dashboard-row-bottom {
+            display: grid;
+            grid-template-columns: 1fr 1.6fr;
+            gap: 18px;
+            margin-bottom: 30px;
+            align-items: start;
+        }
+
+        .chart-card,
+        .insights-card,
+        .box {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            box-shadow: 0 8px 24px rgba(15,61,46,0.06);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .chart-card:hover,
+        .insights-card:hover,
+        .box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 40px rgba(15,61,46,0.10);
+        }
+
+        .chart-card,
+        .insights-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-card h4,
+        .insights-card h4,
+        .box h3,
+        .box h4 {
+            margin-bottom: 20px;
+            font-size: 15px;
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .box-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .box-header-flex h3,
+        .box-header-flex h4 {
+            margin-bottom: 0 !important;
+        }
+
+        /* Chart Canvas */
+        .canvas-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 290px;
+        }
+
+        .canvas-wrap canvas {
+            max-height: 290px !important;
+            max-width: 290px !important;
+        }
+
+        /* Insights List */
+        .insight-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .insight-list li {
+            padding: 14px 18px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.6);
+            color: #334155;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            transition: background 0.2s ease;
+        }
+
+        .insight-list li:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .insight-list li strong {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        /* Scrollable Areas */
+        .feedback-scroll,
+        .words-scroll {
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .feedback-scroll { max-height: 420px; }
+        .words-scroll { max-height: 380px; }
+
+        .feedback-scroll::-webkit-scrollbar,
+        .words-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .feedback-scroll::-webkit-scrollbar-thumb,
+        .words-scroll::-webkit-scrollbar-thumb {
+            background: rgba(1, 102, 50, 0.25);
+            border-radius: 999px;
+        }
+
+        .feedback-scroll::-webkit-scrollbar-track,
+        .words-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        /* Feedback Item */
+        .feedback-item {
+            background: rgba(255, 255, 255, 0.65);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .feedback-item:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateX(4px);
+        }
+
+        .feedback-text {
+            font-size: 13.5px;
+            color: #1e293b;
+            line-height: 1.5;
+        }
+
+        .feedback-meta {
+            font-size: 11.5px;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        .feedback-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .feedback-badge {
+            display: inline-flex;
+            gap: 8px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .feedback-badge.positive { background: #16a34a; }
+        .feedback-badge.neutral { background: #f59e0b; }
+        .feedback-badge.negative { background: #ef4444; }
+
+        .btn-action {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #016632;
+            background: #EEF9E4;
+            color: #013d20;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: background 0.2s ease;
+        }
+
+        .btn-action:hover {
+            background: #DFF5C0;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .pagination span {
+            color: #475569;
+            font-size: 13px;
+        }
+
+        .pagination a {
+            text-decoration: none;
+        }
+
+        .feedback-details {
+            margin-top: 14px;
+            font-size: 13px;
+            color: #334155;
+            padding: 14px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* ===== MOST COMMON WORDS (TAG LAYOUT) ===== */
+        .analytics-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .analytics-panel li {
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(239, 246, 255, 0.6);
+            color: #1e293b;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .analytics-panel li:hover {
+            background: rgba(239, 246, 255, 0.95);
+            transform: translateY(-2px);
+        }
+
+        .analytics-panel li strong {
+            font-weight: 600;
+        }
+
+        .analytics-panel li span {
+            background: #016632;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* ============ NAVBAR (synced with Explore Admin) ============ */
+        .navbar { background: #0F3D2E; display: flex; justify-content: space-between; align-items: center; padding: 14px 40px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 24px rgba(11,31,23,0.18); }
+        .logo { font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif; color: #fff; font-weight: 800; font-size: 16.5px; letter-spacing: -0.2px; text-decoration: none; display: flex; align-items: center; gap: 9px; }
+        .logo-mark { width: 26px; height: 26px; border-radius: 8px; background: #B6F500; display: inline-flex; align-items: center; justify-content: center; color: #0B1F17; font-size: 13px; font-weight: 800; }
+        .nav-links { display: flex; align-items: center; gap: 2px; background: rgba(255,255,255,0.07); padding: 5px; border-radius: 999px; }
+        .nav-links a { color: rgba(255,255,255,0.72); text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: 999px; transition: all 0.2s ease; white-space: nowrap; }
+        .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.08); }
+        .nav-links a.active { color: #0B1F17; background: #B6F500; }
+        .nav-logout { margin-left: 10px !important; background: rgba(239,68,68,0.16) !important; color: #FFD3D3 !important; }
+        .nav-logout:hover { background: #ef4444 !important; color: #fff !important; }
+
+        /* Responsive Layouts */
+        @media (max-width: 900px) {
+            .dashboard-row-top,
+            .dashboard-row-bottom {
+                grid-template-columns: 1fr;
+            }
+            .navbar { flex-direction: column; gap: 12px; padding: 16px 20px; align-items: stretch; }
+            .logo { justify-content: center; }
+            .nav-links { width: 100%; justify-content: center; flex-wrap: wrap; }
+            .nav-links a { font-size: 12.5px; padding: 7px 12px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar">
+        <a href="{% url 'home' %}" class="logo">
+            <span class="logo-mark">DC</span>Digital Culture
+        </a>
+        <div class="nav-links">
+            <a href="/admin-home/" class="{% if request.path == '/admin-home/' %}active{% endif %}">Control</a>
+            <a href="/admin-explore/" class="{% if request.path == '/admin-explore/' %}active{% endif %}">Explore</a>
+            <a href="/admin-attendance/" class="{% if request.path == '/admin-attendance/' %}active{% endif %}">Attendance</a>
+            <a href="/admin-feedback/" class="{% if request.path == '/admin-feedback/' %}active{% endif %}">Feedback</a>
+            <a href="{% url 'admin_logout' %}" class="nav-logout">Logout</a>
+        </div>
+    </div>
+
+
+    <div class="container">
+
+        <div class="hero">
+            <h1>Feedback & Sentiment</h1>
+            <p>Memahami opini peserta dengan sentiment tracking dan laporan yang menyatu ke dashboard admin.</p>
+        </div>
+
+        <form class="filters" method="get" id="feedbackFilterForm" style="display: flex; gap: 15px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; align-items: flex-end; flex-wrap: wrap;">
+            
+            <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; width: 100%; justify-content: space-between;">
+                
+                <div style="display: flex; gap: 10px; align-items: flex-end; flex: 1; min-width: 300px; flex-wrap: wrap;">
+                    
+                    <div style="flex: 1; min-width: 250px; position: relative;" id="customMultiSelectContainer">
+                        <strong style="font-size: 14px; color: #1e293b; display: block; margin-bottom: 5px;">Events:</strong>
+                        
+                        <select name="event" multiple id="realEventSelect" style="display: none;">
+                            <option value="General" {% if 'General' in selected_events %}selected{% endif %}>General</option>
+                            {% for e in event_options %}
+                            <option value="{{ e.event_id }}" {% if e.event_id|stringformat:"s" in selected_events %}selected{% endif %}>{{ e.event_name }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <div id="msUiField" style="min-height: 40px; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; background: #fff;">
+                            <span style="color: #94a3b8; font-size: 13px; padding-left: 5px;" id="msPlaceholder">Select events...</span>
+                        </div>
+
+                        <div id="msDropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 50; max-height: 300px; flex-direction: column;">
+                            <div style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
+                                <input type="text" id="msSearch" placeholder="Search events in list..." style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; box-sizing: border-box;">
+                            </div>
+                            <div style="padding: 8px 12px; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; margin: 0; color: #334155;">
+                                    <input type="checkbox" id="msSelectAll">
+                                    Select All
+                                </label>
+                            </div>
+                            <div id="msOptionsList" style="overflow-y: auto; padding: 5px 0;"></div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" style="padding: 0 16px; height: 40px; background: #016632; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;">Apply Filters</button>
+                </div>
+
+                <div style="position: relative; min-width: 250px;">
+                    <strong style="font-size: 14px; color: #1e293b; display: block; margin-bottom: 5px;">Search Name:</strong>
+                    <input type="text" name="search" id="eventSearchInput" class="filter-select" placeholder="Search event..." value="{{ search_query }}" style="width: 100%; height: 40px; padding: 8px; border-radius: 6px; box-sizing: border-box;" autocomplete="off">
+                    
+                    <div id="autocompleteDropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 50; max-height: 250px; overflow-y: auto;">
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <div class="sentiment">
+            <div class="card">
+                <h4>Positive</h4>
+                <h2 class="positive">{{ positive }}</h2>
+                <div class="percent">{{ positive_percent }}%</div>
+            </div>
+            <div class="card">
+                <h4>Neutral</h4>
+                <h2 class="neutral">{{ neutral }}</h2>
+                <div class="percent">{{ neutral_percent }}%</div>
+            </div>
+            <div class="card">
+                <h4>Negative</h4>
+                <h2 class="negative">{{ negative }}</h2>
+                <div class="percent">{{ negative_percent }}%</div>
+            </div>
+        </div>
+
+        <div class="dashboard-row-top">
+
+            <div class="chart-card">
+                <h4>Sentiment Distribution</h4>
+                <div class="canvas-wrap">
+                    <canvas id="sentimentChart"></canvas>
+                </div>
+            </div>
+
+            <div class="box">
+                <div class="box-header-flex">
+                    <h3>Recent Feedback</h3>
+                    <select name="sentiment" class="filter-select" form="feedbackFilterForm" style="min-width: 140px;"
+                        onchange="document.getElementById('feedbackFilterForm').submit();">
+                        <option value="all" {% if selected_sentiment == 'all' %}selected{% endif %}>All Sentiment</option>
+                        <option value="positive" {% if selected_sentiment == 'positive' %}selected{% endif %}>Positive</option>
+                        <option value="neutral" {% if selected_sentiment == 'neutral' %}selected{% endif %}>Neutral</option>
+                        <option value="negative" {% if selected_sentiment == 'negative' %}selected{% endif %}>Negative</option>
+                    </select>
+                </div>
+                <div class="feedback-scroll">
+                    {% for fb in feedbacks %}
+                    <div class="feedback-item">
+                        <div class="feedback-text">{{ fb.comment }}</div>
+                        <div class="feedback-meta">{{ fb.time }} • Anonymous User</div>
+
+                        <div class="feedback-footer">
+                            {% if 'positive' in fb.sentiment|lower %}
+                            <span class="feedback-badge positive">{{ fb.sentiment }}</span>
+                            {% elif 'negative' in fb.sentiment|lower %}
+                            <span class="feedback-badge negative">{{ fb.sentiment }}</span>
+                            {% else %}
+                            <span class="feedback-badge neutral">{{ fb.sentiment }}</span>
+                            {% endif %}
+                            <div class="item-actions">
+                                <button type="button" class="btn-action" onclick="toggleDetails(this)">Detail</button>
+                            </div>
+                        </div>
+
+                        <div class="feedback-details hidden">
+                            <p><strong>📌 Event:</strong> {{ fb.event }}</p>
+                            <p><strong>⭐ Rating:</strong> {{ fb.rating }}{% if fb.rating != 'N/A' %} Stars{% endif %}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div style="text-align: center; color: #64748b; font-size: 13px; padding: 20px;">No feedback found.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle Area Detail Feedback
+        function toggleDetails(button) {
+            const feedbackItem = button.closest('.feedback-item');
+            const details = feedbackItem.querySelector('.feedback-details');
+            if (details) {
+                details.classList.toggle('hidden');
+                button.textContent = details.classList.contains('hidden') ? 'Detail' : 'Tutup';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Chart.js Initialization ---
+            const ctx = document.getElementById('sentimentChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Positive', 'Neutral', 'Negative'],
+                    datasets: [{
+                        data: [
+                            parseFloat("{{ positive_percent|default:0 }}"), 
+                            parseFloat("{{ neutral_percent|default:0 }}"), 
+                            parseFloat("{{ negative_percent|default:0 }}")
+                        ],
+                        backgroundColor: ['#16a34a', '#f59e0b', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // --- Custom Multi-Select Logic ---
+            const realSelect = document.getElementById('realEventSelect');
+            const uiField = document.getElementById('msUiField');
+            const placeholder = document.getElementById('msPlaceholder');
+            const dropdown = document.getElementById('msDropdown');
+            const searchInput = document.getElementById('msSearch');
+            const selectAllCheckbox = document.getElementById('msSelectAll');
+            const optionsList = document.getElementById('msOptionsList');
+
+            let optionsData = [];
+            for(let i=0; i<realSelect.options.length; i++) {
+                optionsData.push({
+                    index: i,
+                    value: realSelect.options[i].value,
+                    text: realSelect.options[i].text,
+                    selected: realSelect.options[i].selected
+                });
+            }
+
+            function renderDropdown() {
+                const filterText = searchInput.value.toLowerCase();
+                optionsList.innerHTML = '';
+                let visibleCount = 0;
+                let selectedVisibleCount = 0;
+
+                optionsData.forEach(opt => {
+                    if(opt.text.toLowerCase().includes(filterText)) {
+                        visibleCount++;
+                        if(opt.selected) selectedVisibleCount++;
+
+                        const lbl = document.createElement('label');
+                        lbl.style.display = 'flex';
+                        lbl.style.alignItems = 'center';
+                        lbl.style.gap = '8px';
+                        lbl.style.padding = '8px 12px';
+                        lbl.style.fontSize = '13px';
+                        lbl.style.cursor = 'pointer';
+                        lbl.style.margin = '0';
+                        lbl.style.color = '#475569';
+                        
+                        lbl.onmouseenter = () => lbl.style.background = '#f1f5f9';
+                        lbl.onmouseleave = () => lbl.style.background = 'transparent';
+
+                        const cb = document.createElement('input');
+                        cb.type = 'checkbox';
+                        cb.checked = opt.selected;
+                        cb.onchange = (e) => {
+                            opt.selected = e.target.checked;
+                            syncToRealSelect();
+                            renderChips();
+                            renderDropdown();
+                        };
+
+                        lbl.appendChild(cb);
+                        lbl.appendChild(document.createTextNode(opt.text));
+                        optionsList.appendChild(lbl);
+                    }
+                });
+                
+                selectAllCheckbox.checked = (visibleCount > 0 && selectedVisibleCount === visibleCount);
+            }
+
+            function renderChips() {
+                const selected = optionsData.filter(o => o.selected);
+                if(selected.length === 0) {
+                    uiField.innerHTML = '';
+                    uiField.appendChild(placeholder);
+                    return;
+                }
+                
+                uiField.innerHTML = '';
+                selected.forEach(opt => {
+                    const chip = document.createElement('div');
+                    chip.style.background = '#E4FFC7';
+                    chip.style.color = '#1a5c00';
+                    chip.style.padding = '2px 8px';
+                    chip.style.borderRadius = '16px';
+                    chip.style.fontSize = '12px';
+                    chip.style.display = 'flex';
+                    chip.style.alignItems = 'center';
+                    chip.style.gap = '4px';
+                    chip.style.whiteSpace = 'nowrap';
+
+                    const textNode = document.createElement('span');
+                    textNode.innerText = opt.text;
+                    
+                    const closeBtn = document.createElement('span');
+                    closeBtn.innerHTML = '&times;';
+                    closeBtn.style.cursor = 'pointer';
+                    closeBtn.style.fontWeight = 'bold';
+                    closeBtn.style.fontSize = '14px';
+                    closeBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        opt.selected = false;
+                        syncToRealSelect();
+                        renderChips();
+                        if(dropdown.style.display === 'flex') renderDropdown();
+                    };
+
+                    chip.appendChild(textNode);
+                    chip.appendChild(closeBtn);
+                    uiField.appendChild(chip);
+                });
+            }
+
+            function syncToRealSelect() {
+                optionsData.forEach(opt => {
+                    realSelect.options[opt.index].selected = opt.selected;
+                });
+            }
+
+            uiField.onclick = () => {
+                dropdown.style.display = dropdown.style.display === 'none' ? 'flex' : 'none';
+                if(dropdown.style.display === 'flex') {
+                    searchInput.focus();
+                    renderDropdown();
+                }
+            };
+
+            searchInput.oninput = renderDropdown;
+
+            selectAllCheckbox.onchange = (e) => {
+                const filterText = searchInput.value.toLowerCase();
+                optionsData.forEach(opt => {
+                    if(opt.text.toLowerCase().includes(filterText)) {
+                        opt.selected = e.target.checked;
+                    }
+                });
+                syncToRealSelect();
+                renderChips();
+                renderDropdown();
+            };
+
+            document.addEventListener('click', (e) => {
+                if(!document.getElementById('customMultiSelectContainer').contains(e.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+
+            renderChips();
+
+            // --- Autocomplete Logic ---
+            const allEventNames = [
+                {% for evt in event_options %}
+                "{{ evt|escapejs }}",
+                {% endfor %}
+            ];
+
+            const eventSearchInput = document.getElementById('eventSearchInput');
+            const autocompleteDropdown = document.getElementById('autocompleteDropdown');
+
+            eventSearchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                autocompleteDropdown.innerHTML = '';
+                if (!query) {
+                    autocompleteDropdown.style.display = 'none';
+                    return;
+                }
+
+                const matches = allEventNames.filter(name => name.toLowerCase().includes(query));
+                if (matches.length === 0) {
+                    autocompleteDropdown.style.display = 'none';
+                    return;
+                }
+
+                matches.forEach(match => {
+                    const item = document.createElement('div');
+                    item.textContent = match;
+                    item.style.padding = '8px 12px';
+                    item.style.cursor = 'pointer';
+                    item.style.fontSize = '13px';
+                    item.style.color = '#334155';
+                    item.style.borderBottom = '1px solid #f1f5f9';
+                    
+                    item.onmouseenter = () => item.style.background = '#f8fafc';
+                    item.onmouseleave = () => item.style.background = 'transparent';
+                    
+                    item.onclick = () => {
+                        eventSearchInput.value = match;
+                        autocompleteDropdown.style.display = 'none';
+                        document.getElementById('feedbackFilterForm').submit();
+                    };
+                    autocompleteDropdown.appendChild(item);
+                });
+                
+                autocompleteDropdown.style.display = 'block';
+            });
+
+            document.addEventListener('click', (e) => {
+                if(!document.getElementById('eventSearchInput').contains(e.target) && !autocompleteDropdown.contains(e.target)) {
+                    autocompleteDropdown.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

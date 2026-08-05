@@ -1,0 +1,245 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance — {{ event.event_name }}</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --ink:        #0B1F17;
+        --forest:     #0F3D2E;
+        --forest-2:   #1B5C42;
+        --lime:       #B6F500;
+        --lime-soft:  #E9FFB0;
+        --bg:         #F2F5F2;
+        --card:       #FFFFFF;
+        --muted:      #6B7A73;
+        --border:     rgba(15,61,46,0.09);
+        --danger:     #dc2626;
+        --r-md: 20px;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin:0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:'Poppins', sans-serif;
+    }
+    .wrap { width:92%; max-width:640px; margin:32px auto 60px; }
+    .back-link { display:inline-block; margin-bottom:18px; color: var(--forest-2); text-decoration:none; font-size:14px; font-weight:600; }
+    .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--r-md);
+        padding: 32px 28px;
+        box-shadow: 0 8px 28px rgba(15,61,46,0.08);
+    }
+    h1 { font-size:22px; margin:0 0 4px; }
+    .sub { color: var(--muted); font-size:13.5px; margin-bottom:24px; }
+
+    .event-pill {
+        display:inline-flex; align-items:center; gap:8px;
+        background: var(--lime-soft);
+        border-radius: 999px;
+        padding: 8px 16px;
+        font-size: 13px; font-weight:600;
+        margin-bottom: 22px;
+    }
+
+    label { display:block; margin-top:18px; font-size:13.5px; font-weight:600; color:#334155; }
+    .hint { font-size:12px; color:var(--muted); margin-top:4px; }
+
+    input[type=email], input[type=file] {
+        width:100%;
+        padding:12px 14px;
+        margin-top:8px;
+        border:1px solid #cbd5f5;
+        border-radius:12px;
+        font-size:14px;
+        font-family:'Poppins',sans-serif;
+        background:#fff;
+    }
+
+    .gps-box {
+        margin-top:10px;
+        padding:14px 16px;
+        border-radius:12px;
+        background: var(--bg);
+        border: 1px dashed var(--border);
+        font-size:13px;
+        display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    }
+    .gps-status { color: var(--muted); }
+    .gps-status.ok { color: #15803d; font-weight:600; }
+    .gps-status.err { color: var(--danger); font-weight:600; }
+    .btn-gps {
+        border:none; border-radius:999px; padding:8px 16px; font-size:12.5px;
+        font-weight:700; cursor:pointer; background: var(--forest); color: var(--lime);
+    }
+    .btn-gps:disabled { opacity:0.6; cursor:not-allowed; }
+
+    .preview-photo { margin-top:12px; max-width:160px; border-radius:12px; display:none; }
+
+    .error-box {
+        margin-top:18px; background:#fef2f2; border:1px solid #fecaca; color:#b91c1c;
+        border-radius:12px; padding:14px 16px; font-size:13px; display:none;
+    }
+    .error-box.show { display:block; }
+    .error-box ul { margin:0; padding-left:18px; }
+
+    .button-row { margin-top:26px; display:flex; gap:14px; flex-wrap:wrap; }
+    button.submit {
+        border:none; border-radius:999px; padding:13px 26px; font-size:14px; font-weight:700;
+        cursor:pointer; background: var(--forest); color: var(--lime); flex:1;
+    }
+    button.submit:disabled { opacity:0.6; cursor:not-allowed; }
+    a.cancel { align-self:center; color: var(--muted); text-decoration:none; font-size:13.5px; }
+
+    .success-panel { text-align:center; padding: 20px 0; }
+    .success-ring {
+        width:64px; height:64px; border-radius:50%;
+        background: var(--lime-soft); color: var(--forest);
+        display:flex; align-items:center; justify-content:center;
+        font-size:28px; margin: 0 auto 16px;
+    }
+    .success-panel h3 { margin:0 0 8px; }
+    .success-panel p { color: var(--muted); font-size:13.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+    {% if request.GET.source == 'admin' %}
+    <a href="/admin-explore/" class="back-link">← Admin Explore</a>
+    {% else %}
+    <a href="{% url 'event_detail' event.event_id %}" class="back-link">← Kembali ke Event</a>
+    {% endif %}
+
+    <div class="card">
+
+        {% if show_success %}
+        <div class="success-panel">
+            <div class="success-ring">✓</div>
+            <h3>Attendance Berhasil Dikirim</h3>
+            <p>Terima kasih! Attendance Anda untuk <strong>{{ event_name }}</strong> sudah tersimpan dan akan diverifikasi oleh admin.</p>
+            <div class="button-row" style="justify-content:center;">
+                <a href="{% url 'event_detail' event.event_id %}" class="cancel">Kembali ke halaman event →</a>
+            </div>
+        </div>
+        {% else %}
+
+        <h1>Attendance / Check-in</h1>
+        <div class="sub">Isi data berikut untuk mencatat kehadiran Anda pada event ini.</div>
+
+        <div class="event-pill">📅 {{ event.event_name }}</div>
+
+        {% if errors %}
+        <div class="error-box show">
+            <ul>
+                {% for err in errors %}<li>{{ err }}</li>{% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form id="attForm" method="POST" enctype="multipart/form-data" action="{% url 'submit_attendance' event.event_id %}" novalidate>
+            {% csrf_token %}
+
+            <label for="att-email">Email Peserta</label>
+            <input type="email" id="att-email" name="email" placeholder="Email yang dipakai saat registrasi"
+                   required value="{{ form.email.value|default:'' }}">
+            <div class="hint">Hanya email yang sudah terdaftar pada event ini yang dapat melakukan attendance.</div>
+
+            <label for="att-photo">Foto Bukti Kehadiran</label>
+            <input type="file" id="att-photo" name="photo_evidence" accept="image/*" capture="environment" required>
+            <img id="photoPreview" class="preview-photo" alt="Preview foto">
+
+            <label>Lokasi (GPS)</label>
+            <div class="gps-box">
+                <span class="gps-status" id="gpsStatus">Lokasi belum diambil.</span>
+                <button type="button" class="btn-gps" id="gpsBtn" onclick="captureLocation()">📍 Ambil Lokasi Saya</button>
+            </div>
+            <input type="hidden" name="latitude" id="att-latitude">
+            <input type="hidden" name="longitude" id="att-longitude">
+
+            <div class="button-row">
+                <button type="submit" class="submit" id="attSubmitBtn">Kirim Attendance →</button>
+                <a href="{% url 'event_detail' event.event_id %}" class="cancel">Batal</a>
+            </div>
+        </form>
+
+        {% endif %}
+    </div>
+</div>
+
+<script>
+(function () {
+    const form = document.getElementById("attForm");
+    if (!form) return; // halaman success, tidak ada form
+
+    const gpsBtn    = document.getElementById("gpsBtn");
+    const gpsStatus = document.getElementById("gpsStatus");
+    const latInput  = document.getElementById("att-latitude");
+    const lngInput  = document.getElementById("att-longitude");
+    const submitBtn = document.getElementById("attSubmitBtn");
+    const photoInput = document.getElementById("att-photo");
+    const photoPreview = document.getElementById("photoPreview");
+
+    photoInput.addEventListener("change", function () {
+        const file = this.files && this.files[0];
+        if (!file) { photoPreview.style.display = "none"; return; }
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            photoPreview.src = e.target.result;
+            photoPreview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+    });
+
+    window.captureLocation = function () {
+        if (!navigator.geolocation) {
+            gpsStatus.textContent = "Geolocation tidak didukung oleh browser ini.";
+            gpsStatus.className = "gps-status err";
+            return;
+        }
+        gpsBtn.disabled = true;
+        gpsStatus.textContent = "Mengambil lokasi...";
+        gpsStatus.className = "gps-status";
+
+        navigator.geolocation.getCurrentPosition(
+            function (pos) {
+                latInput.value = pos.coords.latitude.toFixed(6);
+                lngInput.value = pos.coords.longitude.toFixed(6);
+                gpsStatus.textContent = "Lokasi berhasil diambil ✓ (" + latInput.value + ", " + lngInput.value + ")";
+                gpsStatus.className = "gps-status ok";
+                gpsBtn.disabled = false;
+            },
+            function (err) {
+                gpsStatus.textContent = "Gagal mengambil lokasi: izin ditolak atau tidak tersedia.";
+                gpsStatus.className = "gps-status err";
+                gpsBtn.disabled = false;
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    };
+
+    form.addEventListener("submit", function (e) {
+        // Business rule: semua field (foto, latitude, longitude) wajib diisi.
+        // Validasi sebenarnya tetap di backend; ini hanya UX agar pesan
+        // muncul lebih cepat tanpa round-trip ke server.
+        if (!latInput.value || !lngInput.value) {
+            e.preventDefault();
+            gpsStatus.textContent = "Mohon ambil lokasi GPS terlebih dahulu sebelum mengirim.";
+            gpsStatus.className = "gps-status err";
+            return;
+        }
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Mengirim...";
+    });
+})();
+</script>
+</body>
+</html>

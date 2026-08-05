@@ -1,0 +1,199 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Preview: {{ event.event_name }}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #e4effb 0%, #c9daf1 100%);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+        }
+
+        .hero-img {
+            height: 380px;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        .card-custom {
+            border-radius: 24px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.85);
+        }
+
+        .badge-core {
+            background: #3b82f6;
+            color: white;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .section-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 14px;
+            padding: 14px;
+            border: 1px solid rgba(0,0,0,0.06);
+            height: 100%;
+        }
+
+        .rating {
+            color: #FFD700;
+            font-size: 18px;
+        }
+
+        .detail-label {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 2px;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .admin-banner {
+            background: #1e293b;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .hero-img {
+                height: 260px;
+            }
+
+            .card-body {
+                padding: 1.25rem !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .hero-img {
+                height: 220px;
+            }
+
+            .card-custom {
+                border-radius: 16px;
+            }
+
+            .badge-core {
+                font-size: 11px;
+                padding: 7px 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="admin-banner">
+    🔒 Admin Preview Mode - Internal Use Only
+</div>
+
+<div class="container py-4">
+
+    <div class="mb-4">
+        <a href="{% url 'admin_explore' %}" class="btn btn-secondary" style="border-radius: 12px; font-size: 14px; padding: 8px 16px;">
+            ← Kembali ke Explore Admin
+        </a>
+    </div>
+
+    <div class="card shadow-lg border-0 card-custom">
+
+        <!-- IMAGE -->
+        {% if event.image_url %}
+            <img src="/media/{{ event.image_url }}" class="hero-img" onerror="this.src='https://picsum.photos/1200/500?random={{ event.event_id }}'">
+        {% else %}
+            <img src="https://picsum.photos/1200/500?random={{ event.event_id }}" class="hero-img">
+        {% endif %}
+
+        <!-- CONTENT -->
+        <div class="card-body p-4 p-md-5">
+
+            <!-- TITLE + RATING + CORE VALUES -->
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+
+                <div>
+                    <h2 class="fw-bold mb-2" style="color: #1e293b;">{{ event.event_name }}</h2>
+                    {% if event.event_date < today %}
+                        <div class="rating">⭐ {{ event.rating }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    {% for core in event.core_values.all %}
+                        <span class="badge-core">{{ core.core_value_name }}</span>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+            <hr style="border-color: rgba(0,0,0,0.1);">
+
+            <!-- INFO -->
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-4">
+                    <div class="info-box">
+                        <div class="detail-label">Date</div>
+                        <div class="detail-value">📅 {{ event.event_date }}</div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="info-box">
+                        <div class="detail-label">Time</div>
+                        <div class="detail-value">⏰ {{ event.event_time }}</div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="info-box">
+                        <div class="detail-label">Location</div>
+                        <div class="detail-value">📍 {{ event.location }}</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- DESCRIPTION -->
+            <div class="mb-4">
+                <h5 class="section-title" style="color: #1e293b;">About Event</h5>
+                <p style="color: #475569; white-space: pre-line;">{{ event.description }}</p>
+            </div>
+
+            <!-- BENEFITS & TARGET ARE INTENTIONALLY REMOVED FOR ADMIN PREVIEW IF THEY ARE STATIC IN USER VIEW,
+                 BUT IF THEY BELONG TO THE EVENT STRUCTURE, I'LL KEEP THEM. THEY SEEMED HARDCODED IN EVENT_DETAIL.HTML. -->
+            <!-- SINCE THEY WERE HARDCODED, I'M OMITTING THEM FOR ADMIN PREVIEW AS PER 'Remove any user recommendation/related event section' -->
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

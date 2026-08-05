@@ -1,0 +1,740 @@
+{% load static %}
+
+<style>
+    /* Menggunakan namespace khusus agar tidak merusak CSS global home.html */
+    .brand-badge span {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        color: #c9a84c;
+        text-transform: uppercase;
+    }
+    
+    .brand-dot {
+        width: 6px; height: 6px;
+        background: #c9a84c;
+        border-radius: 50%;
+        animation: chatPulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes chatPulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* TOMBOL TRIGGER UTAMA (Disesuaikan dengan tema kuning premium) */
+    .chat-widget-trigger {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #ffc107; /* Kuning Pegadaian */
+        border: none;
+        box-shadow: 0 4px 16px rgba(255,193,7,0.4);
+        cursor: pointer;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s;
+    }
+    .chat-widget-trigger:hover {
+        transform: scale(1.1) rotate(8deg);
+        background: #e0a800;
+        box-shadow: 0 6px 20px rgba(255,193,7,0.5);
+    }
+    .chat-widget-trigger:active {
+        transform: scale(0.95);
+    }
+    .chat-widget-trigger svg {
+        width: 24px;
+        height: 24px;
+        fill: white;
+    }
+
+    /* KONTAINER POP-UP */
+    .chat-popup-container {
+        position: fixed;
+        bottom: 96px;
+        right: 24px;
+        z-index: 9998;
+        width: 400px;
+        max-width: calc(100vw - 48px);
+        height: 600px;
+        max-height: calc(100vh - 140px);
+        background: #ffffff;
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid #d4e6da;
+        box-shadow: 0 12px 40px rgba(1,78,40,0.15);
+        
+        /* Efek transisi buka/tutup */
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+        pointer-events: none;
+        transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* State ketika pop-up aktif */
+    .chat-popup-container.show {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+
+    /* HEADER */
+    .chat-popup-header {
+        padding: 18px 20px;
+        background: #014f28;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .chat-popup-header::before {
+        content: '';
+        position: absolute;
+        width: 200px; height: 200px;
+        background: radial-gradient(circle, rgba(0,166,81,0.25) 0%, transparent 70%);
+        top: -80px; right: -60px;
+    }
+    .chat-header-content {
+        position: relative;
+        z-index: 1;
+    }
+    .brand-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(201,168,76,0.2);
+        border: 1px solid rgba(201,168,76,0.4);
+        border-radius: 20px;
+        padding: 2px 8px;
+        margin-bottom: 6px;
+    }
+    .chat-popup-header h1 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 18px;
+        color: #fff;
+        line-height: 1.2;
+        font-weight: 600;
+        margin: 0;
+    }
+    .chat-popup-header h1 em {
+        font-style: italic;
+        color: rgba(255,255,255,0.7);
+        font-weight: 400;
+    }
+    .chat-header-close {
+        background: none;
+        border: none;
+        color: rgba(255,255,255,0.7);
+        cursor: pointer;
+        padding: 4px;
+        z-index: 2;
+        transition: color 0.2s;
+    }
+    .chat-header-close:hover { color: #fff; }
+
+    /* PROGRESS BAR */
+    .progress-bar {
+        height: 2px;
+        background: rgba(255,255,255,0.08);
+        position: relative;
+        overflow: hidden;
+    }
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0; left: -60%;
+        width: 60%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0,166,81,0.8), transparent);
+        animation: shimmer 2.5s ease-in-out infinite;
+    }
+    @keyframes shimmer { to { left: 120%; } }
+
+    /* CHAT BOX */
+    .chat-box {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        background: #f4f8f5;
+        scroll-behavior: smooth;
+    }
+    .chat-box::-webkit-scrollbar { width: 4px; }
+    .chat-box::-webkit-scrollbar-track { background: transparent; }
+    .chat-box::-webkit-scrollbar-thumb { background: #d4e6da; border-radius: 4px; }
+
+    /* DATE DIVIDER */
+    .date-label {
+        text-align: center;
+        font-size: 11px;
+        color: #7a9585;
+        position: relative;
+    }
+    .date-label::before, .date-label::after {
+        content: '';
+        position: absolute;
+        top: 50%; width: 25%; height: 1px;
+        background: #d4e6da;
+    }
+    .date-label::before { left: 0; }
+    .date-label::after { right: 0; }
+
+    /* MESSAGES */
+    .msg-row {
+        display: flex;
+        gap: 10px;
+        animation: slideUp 0.3s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .msg-row.user { flex-direction: row-reverse; }
+
+    .bot-icon {
+        width: 30px; height: 30px;
+        background: #e6f5ed;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .bot-icon svg { width: 16px; height: 16px; fill: #016632; }
+
+    .bubble {
+        max-width: 78%;
+        padding: 10px 14px;
+        border-radius: 16px;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #111a13;
+    }
+    .bubble.bot {
+        background: #ffffff;
+        border: 1px solid #d4e6da;
+        border-bottom-left-radius: 4px;
+    }
+    .bubble.user {
+        background: #00A651;
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+
+    /* RATING & CHIPS */
+    .rating-wrap { margin-top: 10px; }
+    .rating-label { font-size: 11px; color: #7a9585; margin-bottom: 6px; }
+    .stars { display: flex; gap: 4px; }
+    .stars button {
+        background: none; border: none; padding: 0; cursor: pointer;
+        font-size: 22px; color: #d4e6da; transition: color 0.15s, transform 0.15s;
+    }
+    .stars button:hover, .stars button.active { color: #c9a84c; transform: scale(1.1); }
+    .stars button:disabled { cursor: not-allowed; transform: none; }
+
+    .quick-replies { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .chip {
+        display: inline-flex; align-items: center;
+        background: #f0faf4; border: 1px solid #d4e6da; border-radius: 20px;
+        padding: 4px 10px; font-size: 11.5px; color: #016632; font-weight: 500;
+        cursor: pointer; border: 1px solid #d4e6da; transition: background 0.2s, border-color 0.2s;
+    }
+    .chip:hover { background: #e6f5ed; border-color: #00A651; }
+
+    /* TYPING, BADGES, INPUT AREA */
+    .typing-row { display: flex; align-items: center; gap: 10px; }
+    .typing-dots { display: flex; gap: 4px; background: #fff; border: 1px solid #d4e6da; border-radius: 16px; padding: 10px 14px; }
+    .typing-dots span { width: 6px; height: 6px; background: #7a9585; border-radius: 50%; animation: bounce 1.2s ease-in-out infinite; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); opacity: 0.4; } 40% { transform: translateY(-4px); opacity: 1; } }
+
+    .sentiment-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; padding: 2px 6px; border-radius: 8px; margin-top: 6px; }
+    .sentiment-tag.positive { background: #dcfce7; color: #166534; }
+    .sentiment-tag.neutral  { background: #f1f5f9; color: #475569; }
+    .sentiment-tag.negative { background: #fee2e2; color: #991b1b; }
+
+    .ai-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 500; padding: 2px 6px; border-radius: 8px; margin-top: 6px; background: #f0faf4; color: #016632; border: 1px solid #d4e6da; }
+
+    .input-area { padding: 12px; background: #ffffff; border-top: 1px solid #d4e6da; }
+    .input-row { display: flex; align-items: center; gap: 8px; background: #f4f8f5; border: 1.5px solid #d4e6da; border-radius: 20px; padding: 4px 6px 4px 14px; }
+    .input-row:focus-within { border-color: #00A651; background: white; }
+    .input-row input { flex: 1; border: none; background: transparent; font-size: 13px; color: #111a13; outline: none; padding: 6px 0; }
+    .send-btn { width: 34px; height: 34px; border-radius: 12px; background: #00A651; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+    .send-btn:hover { background: #016632; }
+    .send-btn:disabled { background: #d4e6da; cursor: not-allowed; }
+    .send-btn svg { width: 14px; height: 14px; fill: white; }
+    .input-hint { text-align: center; font-size: 10.5px; color: #7a9585; margin-top: 6px; }
+
+    /* TOAST */
+    .chat-toast { position: fixed; bottom: 110px; right: 40px; background: #014f28; color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transition: all 0.3s ease; pointer-events: none; z-index: 10000; }
+    .chat-toast.show { opacity: 1; transform: translateY(-5px); }
+</style>
+
+<button id="chatWidgetTrigger" class="chat-widget-trigger" onclick="toggleChatWidget()" title="Buka Asisten Budaya">
+    <svg viewBox="0 0 24 24">
+        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+    </svg>
+</button>
+
+<div class="chat-popup-container" id="chatPopup">
+    <div class="chat-popup-header">
+        <div class="chat-header-content">
+            <div class="brand-badge">
+                <div class="brand-dot"></div>
+                <span>Pegadaian</span>
+            </div>
+            <h1>Digital Culture <em>Assistant</em></h1>
+        </div>
+        <button class="chat-header-close" onclick="toggleChatWidget()" aria-label="Tutup Chat">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+        </button>
+    </div>
+    <div class="progress-bar"></div>
+
+    <div class="chat-box" id="chatBox">
+        <div class="date-label">Hari ini</div>
+        <div class="msg-row">
+            <div class="bot-icon">
+                <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            </div>
+            <div>
+                <div class="bubble bot">
+                    Halo! 👋 Saya Digi, asisten digital budaya Pegadaian.<br><br>
+                    Ceritakan pengalaman, kesan, atau masukan Anda terkait <strong>budaya digital di Pegadaian</strong>.
+                </div>
+                <div class="quick-replies">
+                    <button class="chip" onclick="fillInput('Pelayanan digitalnya sudah bagus')">👍 Sudah bagus</button>
+                    <button class="chip" onclick="fillInput('Ada saran untuk event pelatihan')">📅 Saran event</button>
+                    <button class="chip" onclick="fillInput('Perlu peningkatan di beberapa hal')">💬 Ada saran</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <div class="input-row">
+            <input type="text" id="userInput" placeholder="Tulis pesan Anda…" autocomplete="off">
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()" aria-label="Kirim">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+        </div>
+        <p class="input-hint">Pesan Anda terenkripsi dan aman 🔒</p>
+    </div>
+</div>
+
+<div class="chat-toast" id="chatToast"></div>
+
+<script>
+    (function() {
+        // eventId bisa diupdate dari luar via openFeedbackForEvent()
+        // Deteksi dari query string dulu (?event_id=...), kalau tidak ada
+        // coba deteksi dari path URL (/event_detail/<id>/)
+        let eventId = new URLSearchParams(window.location.search).get('event_id');
+        if (!eventId) {
+            const pathMatch = window.location.pathname.match(/event_detail\/(\d+)/);
+            if (pathMatch) eventId = pathMatch[1];
+        }
+
+        let isWaiting = false;
+        let ratingSubmitted = false;
+        let currentFeedbackId = null;
+        let feedbackStage = 'normal';
+
+        // Key localStorage per event untuk mencegah rating lebih dari sekali
+        function ratedKey(eid) { return 'rated_event_' + eid; }
+        function hasRated(eid) { return eid && localStorage.getItem(ratedKey(eid)) === '1'; }
+        function markRated(eid) { if (eid) localStorage.setItem(ratedKey(eid), '1'); }
+
+        function setInputState(enabled, placeholder = 'Tulis pesan Anda…') {
+            const sendBtn = document.getElementById('sendBtn');
+            const userInput = document.getElementById('userInput');
+            if (sendBtn) sendBtn.disabled = !enabled;
+            if (userInput) {
+                userInput.disabled = !enabled;
+                userInput.placeholder = placeholder;
+            }
+        }
+
+        // Reset isi chat ke state awal
+        function resetChat() {
+            const chatBox = document.getElementById('chatBox');
+            if (!chatBox) return;
+            chatBox.innerHTML = `<div class="date-label">Hari ini</div>`;
+            isWaiting = false;
+            ratingSubmitted = false;
+            currentFeedbackId = null;
+            feedbackStage = 'normal';
+            setInputState(true);
+            const userInput = document.getElementById('userInput');
+            if (userInput) userInput.value = '';
+        }
+
+        function showInitialGreeting() {
+            const chatBox = document.getElementById('chatBox');
+            if (!chatBox) return;
+            const row = document.createElement('div');
+            row.className = 'msg-row';
+            row.innerHTML = `
+                <div class="bot-icon">
+                    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                </div>
+                <div>
+                    <div class="bubble bot">
+                        Halo! 👋 Saya Digi, asisten digital budaya Pegadaian.<br><br>
+                        Ceritakan pengalaman, kesan, atau masukan Anda terkait <strong>budaya digital di Pegadaian</strong>.
+                    </div>
+                    <div class="quick-replies">
+                        <button class="chip" onclick="fillInput('Pelayanan digitalnya sudah bagus')">👍 Sudah bagus</button>
+                        <button class="chip" onclick="fillInput('Ada saran untuk event pelatihan')">📅 Saran event</button>
+                        <button class="chip" onclick="fillInput('Perlu peningkatan di beberapa hal')">💬 Ada saran</button>
+                    </div>
+                </div>
+            `;
+            chatBox.appendChild(row);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Tampilkan blok rating langsung saat buka dari past event
+        function showImmediateRating() {
+            const chatBox = document.getElementById('chatBox');
+            if (!chatBox) return;
+            const row = document.createElement('div');
+            row.className = 'msg-row';
+            if (hasRated(eventId)) {
+                feedbackStage = 'normal';
+                setInputState(true);
+                row.innerHTML = `
+                    <div class="bot-icon">
+                        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                    </div>
+                    <div class="bubble bot">
+                        Kamu sudah memberikan rating untuk event ini. Terima kasih! 🙏<br>
+                        Kamu masih bisa mengirim pesan atau masukan lainnya.
+                    </div>
+                `;
+            } else {
+                feedbackStage = 'normal';
+                setInputState(true, 'Ceritakan pengalamanmu di event ini…');
+                row.innerHTML = `
+                    <div class="bot-icon">
+                        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                    </div>
+                    <div class="bubble bot">
+                        Halo! 👋 Bagaimana pengalaman kamu di event ini?<br>
+                        Ceritakan dulu ya, nanti kamu bisa kasih rating bintang setelahnya. 😊
+                    </div>
+                `;
+            }
+            chatBox.appendChild(row);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // BUKA/TUTUP WINDOW CHAT
+        window.toggleChatWidget = function(fromEventId) {
+            const popup = document.getElementById('chatPopup');
+            if (!popup) return;
+            const isOpening = !popup.classList.contains('show');
+            if (isOpening) {
+                if (fromEventId && fromEventId !== eventId) {
+                    eventId = fromEventId;
+                }
+                resetChat();
+                popup.classList.add('show');
+                if (eventId) {
+                    showImmediateRating();
+                } else {
+                    showInitialGreeting();
+                }
+                const userInput = document.getElementById('userInput');
+                if (userInput) userInput.focus();
+            } else {
+                popup.classList.remove('show');
+            }
+        };
+
+        // Dipanggil dari tombol "Feedback" di halaman event (past events)
+        // Contoh pemakaian: <button onclick="openFeedbackForEvent(25)">Feedback</button>
+        window.openFeedbackForEvent = function(id) {
+            const popup = document.getElementById('chatPopup');
+            if (popup && !popup.classList.contains('show')) {
+                window.toggleChatWidget(String(id));
+            } else if (id && String(id) !== eventId) {
+                eventId = String(id);
+                resetChat();
+                showImmediateRating();
+            }
+        };
+
+        window.fillInput = function(text) {
+            const userInput = document.getElementById('userInput');
+            if(userInput) {
+                userInput.value = text;
+                userInput.focus();
+            }
+        };
+
+        window.showToast = function(msg) {
+            const t = document.getElementById('chatToast');
+            if(!t) return;
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => { t.classList.remove('show'); }, 3000);
+        };
+
+        window.sendMessage = function() {
+            if (isWaiting) return;
+            const input = document.getElementById('userInput');
+            const chatBox = document.getElementById('chatBox');
+            if(!input || !chatBox) return;
+
+            const text = input.value.trim();
+            if (!text) return;
+
+            if (feedbackStage === 'suggestion') {
+                appendMsg('user', text);
+                input.value = '';
+                const botMsg = appendBotBubble();
+                botMsg.innerHTML = 'Terima kasih atas sarannya! 🙏 Kami akan menindaklanjutinya.';
+                feedbackStage = 'done';
+                setInputState(false, 'Percakapan selesai');
+                return;
+            }
+            if (feedbackStage === 'done') {
+                showToast('Percakapan sudah selesai. Tutup dan buka kembali bila ingin memberi input lain.');
+                return;
+            }
+
+            appendMsg('user', text);
+            input.value = '';
+            isWaiting = true;
+            document.getElementById('sendBtn').disabled = true;
+
+            const typingId = appendTyping();
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            fetch('/chat-ai/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ message: text, event_id: eventId })
+            })
+            .then(r => r.json())
+            .then(data => {
+                removeTyping(typingId);
+                isWaiting = false;
+                document.getElementById('sendBtn').disabled = false;
+
+                if (data.status === 'error') {
+                    const err = appendBotBubble();
+                    err.innerHTML = data.message || 'Terjadi kesalahan';
+                    return;
+                }
+
+                currentFeedbackId = data.feedback_id;
+                const botDiv = appendBotBubble();
+                botDiv.innerHTML = data.reply || 'Maaf, terjadi kesalahan';
+
+                const badge = document.createElement('div');
+                badge.className = 'ai-badge';
+                badge.textContent = '✦ Dijawab oleh AI';
+                botDiv.appendChild(badge);
+
+                if (data.sentiment) {
+                    const label = { positive: '😊 Positif', neutral: '😐 Netral', negative: '😔 Negatif' }[data.sentiment] || '😐 Netral';
+                    const tag = document.createElement('div');
+                    tag.className = `sentiment-tag ${data.sentiment}`;
+                    tag.textContent = `${label} (${data.confidence || 0}%)`;
+                    botDiv.appendChild(tag);
+                }
+
+                if (data.show_rating === true && !hasRated(eventId)) {
+                    ratingSubmitted = false;
+                    feedbackStage = 'rate';
+                    const ratingDiv = appendBotBubble();
+                    ratingDiv.innerHTML = `
+                        <div class="rating-wrap">
+                            <p class="rating-label">Beri rating untuk event ini</p>
+                            <div class="stars" id="stars">
+                                <button type="button" onclick="setRating(1)">★</button>
+                                <button type="button" onclick="setRating(2)">★</button>
+                                <button type="button" onclick="setRating(3)">★</button>
+                                <button type="button" onclick="setRating(4)">★</button>
+                                <button type="button" onclick="setRating(5)">★</button>
+                            </div>
+                        </div>
+                    `;
+                    setInputState(false);
+                } else if (data.show_rating === true && hasRated(eventId)) {
+                    const ratingDiv = appendBotBubble();
+                    ratingDiv.innerHTML = 'Kamu sudah memberikan rating untuk event ini. Terima kasih! 🙏';
+                }
+                chatBox.scrollTop = chatBox.scrollHeight;
+            })
+            .catch(() => {
+                removeTyping(typingId);
+                isWaiting = false;
+                document.getElementById('sendBtn').disabled = false;
+                const botDiv = appendBotBubble();
+                botDiv.innerHTML = '⚠️ Gagal menghubungi AI';
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        };
+
+        window.setRating = function(value) {
+            if (ratingSubmitted) return;
+            if (!currentFeedbackId) {
+                showToast('Feedback belum tersedia');
+                return;
+            }
+            ratingSubmitted = true;
+            const btns = document.querySelectorAll('#stars button');
+            btns.forEach((b, i) => {
+                b.classList.toggle('active', i < value);
+                b.disabled = true;
+            });
+
+            fetch('/save-feedback/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ feedback_id: currentFeedbackId, rating: value })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'error') {
+                    showToast(data.message);
+                    ratingSubmitted = false;
+                    btns.forEach(b => { b.disabled = false; });
+                    return;
+                }
+                markRated(eventId);
+                const chatBox = document.getElementById('chatBox');
+                const msg = appendBotBubble();
+                const stars = '★'.repeat(value) + '☆'.repeat(5 - value);
+                msg.innerHTML = `Rating <strong>${stars}</strong> berhasil disimpan 🎉<br>Terima kasih atas feedback Anda.`;
+                feedbackStage = 'askSuggestion';
+                askSuggestion();
+                chatBox.scrollTop = chatBox.scrollHeight;
+                showToast('✅ Rating berhasil disimpan');
+            })
+            .catch(() => {
+                showToast('⚠️ Gagal menyimpan rating');
+                ratingSubmitted = false;
+                btns.forEach(b => { b.disabled = false; });
+            });
+        };
+
+        function askSuggestion() {
+            const chatBox = document.getElementById('chatBox');
+            const msg = appendBotBubble();
+            msg.innerHTML = `
+                Terima kasih atas ratingnya! 😊<br>
+                Apakah kamu ingin memberi saran tambahan untuk event ini?
+                <div class="quick-replies">
+                    <button class="chip" onclick="replySuggestion('Ya')">Ya</button>
+                    <button class="chip" onclick="replySuggestion('Tidak')">Tidak</button>
+                </div>
+            `;
+            setInputState(false);
+        }
+
+        window.replySuggestion = function(answer) {
+            const chatBox = document.getElementById('chatBox');
+            appendMsg('user', answer);
+            const botMsg = appendBotBubble();
+            if (answer.toLowerCase() === 'ya') {
+                feedbackStage = 'suggestion';
+                botMsg.innerHTML = 'Silakan ketik saranmu di bawah ini. Kami sangat menghargai masukanmu.';
+                setInputState(true, 'Tulis saran kamu…');
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } else {
+                feedbackStage = 'done';
+                botMsg.innerHTML = 'Terima kasih atas partisipasimu! Sampai jumpa lagi 👋';
+                setInputState(false, 'Percakapan selesai');
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // Tutup pop-up otomatis setelah user memilih "Tidak"
+                setTimeout(function() {
+                    const popup = document.getElementById('chatPopup');
+                    if (popup) popup.classList.remove('show');
+                }, 1200);
+            }
+        };
+
+        function appendMsg(type, text) {
+            const chatBox = document.getElementById('chatBox');
+            const row = document.createElement('div');
+            row.className = `msg-row ${type}`;
+            const bubble = document.createElement('div');
+            bubble.className = `bubble ${type}`;
+            bubble.textContent = text;
+            row.appendChild(bubble);
+            chatBox.appendChild(row);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return bubble;
+        }
+
+        function appendBotBubble() {
+            const chatBox = document.getElementById('chatBox');
+            const row = document.createElement('div');
+            row.className = 'msg-row';
+            const icon = document.createElement('div');
+            icon.className = 'bot-icon';
+            icon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>`;
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble bot';
+            row.appendChild(icon);
+            row.appendChild(bubble);
+            chatBox.appendChild(row);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return bubble;
+        }
+
+        function appendTyping() {
+            const chatBox = document.getElementById('chatBox');
+            const id = 'typing-' + Date.now();
+            const row = document.createElement('div');
+            row.className = 'typing-row';
+            row.id = id;
+            const icon = document.createElement('div');
+            icon.className = 'bot-icon';
+            icon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>`;
+            const dots = document.createElement('div');
+            dots.className = 'typing-dots';
+            dots.innerHTML = `<span></span><span></span><span></span>`;
+            row.appendChild(icon);
+            row.appendChild(dots);
+            chatBox.appendChild(row);
+            return id;
+        }
+
+        function removeTyping(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const userInput = document.getElementById('userInput');
+            if(userInput) {
+                userInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') { sendMessage(); }
+                });
+            }
+        });
+    })();
+</script>

@@ -1,0 +1,136 @@
+<!-- FOOTER -->
+<style>
+    .footer-custom {
+        background: var(--ink);
+        color: rgba(255,255,255,0.65);
+        padding: 56px 0 28px;
+        margin-top: 90px;
+        font-size: 14px;
+        border-top: 1px solid rgba(182,245,0,0.1);
+    }
+    .footer-custom p.fw-semibold { color: white; }
+    .footer-custom a { color: var(--lime); text-decoration: none; font-weight: 600; }
+    .footer-custom small { color: rgba(255,255,255,0.4); }
+
+    .footer-col-title {
+        font-weight: 800;
+        color: white;
+        font-size: 1.15rem;
+        margin-bottom: 14px;
+    }
+    .footer-brand-desc {
+        line-height: 1.7;
+        opacity: 0.75;
+        margin-bottom: 16px;
+    }
+    .footer-contact-line {
+        margin-bottom: 6px;
+        line-height: 1.6;
+    }
+    .footer-map-wrap {
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.12);
+        line-height: 0;
+    }
+    .footer-map-wrap iframe {
+        width: 100%;
+        height: 180px;
+        border: 0;
+        filter: grayscale(15%);
+    }
+    .footer-bottom-rule {
+        border-top: 1px solid rgba(255,255,255,0.1);
+        margin-top: 40px;
+        padding-top: 22px;
+    }
+    .back-to-top-link {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255,255,255,0.55);
+        text-decoration: none;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+    .back-to-top-link:hover { color: var(--lime); }
+    .back-to-top-circle {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1px solid rgba(255,255,255,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: border-color 0.2s, transform 0.2s;
+    }
+    .back-to-top-link:hover .back-to-top-circle {
+        border-color: var(--lime);
+        transform: translateY(-2px);
+    }
+    @media (max-width: 767px) {
+        .footer-custom .row > div { margin-bottom: 32px; text-align: left; }
+        .footer-custom .row > div:last-child { margin-bottom: 0; }
+    }
+</style>
+
+<footer class="footer-custom">
+    <div class="container">
+        <div class="row text-start">
+            <!-- BRAND / DESCRIPTION -->
+            <div class="col-12 col-md-4">
+                <p class="footer-col-title">Digital Culture Platform</p>
+                <p class="footer-brand-desc">
+                    Platform manajemen budaya kerja Pegadaian untuk mendukung engagement,
+                    apresiasi, dan pertumbuhan bersama seluruh insan Pegadaian.
+                </p>
+                <small>© 2026 Pegadaian Digital Culture. All Rights Reserved.</small>
+            </div>
+
+            <!-- LOCATION / INFO -->
+            <div class="col-12 col-md-4">
+                <p class="footer-col-title">Head Office</p>
+                <p class="footer-contact-line fw-semibold" style="color:white;">The Gade Tower</p>
+                <p class="footer-contact-line">
+                    Pegadaian Kantor Pusat, Divisi Budaya Kerja, Lantai 11
+                </p>
+                <p class="footer-contact-line">
+                    Jl. Kramat Raya No.162, Kwitang, Kec. Senen,<br>
+                    Kota Jakarta Pusat, DKI Jakarta 10420
+                </p>
+                <p class="footer-contact-line">
+                    Email: <a href="mailto:budaya.kerja.pusat@pegadaian.co.id">budaya.kerja.pusat@pegadaian.co.id</a>
+                </p>
+                <p class="footer-contact-line">
+                    Instagram: <a href="https://instagram.com/lifeatpegadaian" target="_blank" rel="noopener">@lifeatpegadaian</a>
+                </p>
+            </div>
+
+            <!-- MAP -->
+            <div class="col-12 col-md-4">
+                <p class="footer-col-title">Find Us</p>
+                <div class="footer-map-wrap">
+                    <iframe
+                        src="https://www.google.com/maps?q=Jl.+Kramat+Raya+No.162,+Kwitang,+Kec.+Senen,+Kota+Jakarta+Pusat,+DKI+Jakarta+10420&output=embed"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- BACK TO TOP -->
+        <div class="footer-bottom-rule text-center">
+            <a href="#" class="back-to-top-link" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">
+                <span class="back-to-top-circle">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                </span>
+                Go Back On Top
+            </a>
+        </div>
+    </div>
+</footer>

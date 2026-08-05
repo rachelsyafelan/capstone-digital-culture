@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ action }}</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body {
+    margin: 0;
+    background: #f8fafc;
+    color: #1e293b;
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+}
+
+/* ── Top Nav ────────────────────────────────────── */
+.topnav {
+    background: rgba(15, 81, 50, 0.96); /* Dark Green #0F5132 */
+    backdrop-filter: blur(12px);
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 36px;
+}
+.topnav-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.back-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.85);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.back-pill:hover {
+    background: rgba(163, 230, 53, 0.15);
+    color: #A3E635; /* Lime Green #A3E635 */
+    border-color: rgba(163, 230, 53, 0.3);
+}
+
+.container {
+    width: 90%;
+    max-width: 720px;
+    margin: 0 auto 60px;
+}
+
+.card {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(15, 81, 50, 0.08);
+    padding: 40px 48px;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+}
+
+.card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0F5132, #187146);
+    color: #A3E635;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(15, 81, 50, 0.2);
+}
+
+.card-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+label {
+    display: block;
+    margin-top: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 12px 14px;
+    margin-top: 8px;
+    border: 1.5px solid #d1d9f0;
+    border-radius: 12px;
+    font-size: 14px;
+    background: #fcfcfc;
+    box-sizing: border-box;
+    transition: all 0.25s ease;
+    outline: none;
+    font-family: 'Poppins', sans-serif;
+    color: #1e293b;
+}
+
+input:hover,
+textarea:hover,
+select:hover {
+    background: #ffffff;
+    border-color: #cbd5e1;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    background: #ffffff;
+    border-color: #0F5132;
+    box-shadow: 0 0 0 3px rgba(163, 230, 53, 0.25);
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+}
+
+.button-row {
+    margin-top: 36px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(0,0,0,0.07);
+    display: flex;
+    gap: 12px;
+}
+
+button {
+    border: none;
+    border-radius: 12px;
+    padding: 13px 32px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button.primary {
+    background: #0F5132;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(15, 81, 50, 0.15);
+}
+
+button.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(15, 81, 50, 0.25);
+    background: #136640;
+}
+
+button.secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+button.secondary:hover {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+@media (max-width: 640px) {
+    .card { padding: 24px 20px; }
+    .button-row { flex-direction: column; }
+    button { width: 100%; }
+}
+</style>
+</head>
+
+<body>
+<nav class="topnav">
+    <div class="topnav-inner">
+        <a href="{% url 'admin_explore' %}" class="back-pill">← Explore Admin</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon">{% if attribute %}✏️{% else %}➕{% endif %}</div>
+            <div>
+                <h1>{{ action }}</h1>
+            </div>
+        </div>
+
+        <form method="post"
+              action="{% if attribute %}{% url form_action attribute.attribute_id %}{% else %}{% url form_action %}{% endif %}">
+
+            {% csrf_token %}
+
+            <label>Judul Attribute</label>
+            <input name="attribute_name"
+                   value="{{ attribute.attribute_name|default_if_none:'' }}"
+                   required>
+
+            <label>Kategori (Type)</label>
+            <select name="attribute_type" required>
+                <option value="">-- Pilih Kategori --</option>
+                {% for code, name in attribute_types %}
+                    <option value="{{ code }}" {% if attribute.attribute_type == code %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+
+            <label>PubHTML5 URL / Google Drive / External Link</label>
+            <input type="url" name="file_url"
+                value="{{ attribute.file_url|default_if_none:'' }}"
+                placeholder="https://..." required>
+
+            <div class="button-row">
+                <button type="submit" class="primary">Simpan</button>
+                <button type="button"
+                        class="secondary"
+                        onclick="window.location.href='{% url 'admin_explore' %}'">
+                    Batal
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+</body>
+</html>
