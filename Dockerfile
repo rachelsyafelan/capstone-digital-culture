@@ -1,5 +1,5 @@
 # Gunakan base image Python resmi yang stabil
-FROM python:3.10-slim
+FROM python:3.12-slim
 
 # Atur environment variabel agar Python tidak menulis file .pyc
 ENV PYTHONDONTWRITEBYTECODE=1
