@@ -18,14 +18,16 @@ SECRET_KEY = os.environ.get(
     'django-insecure-fallback-only-for-local-dev-do-not-use-in-production',
 )
 
-DEBUG = os.environ.get('DEBUG', 'False').lower() in ('1', 'true', 'yes')
+# Force DEBUG = True sementara untuk melihat detail error di browser
+DEBUG = True
 
+# Tambahkan domain Railway ke dalam ALLOWED_HOSTS
 ALLOWED_HOSTS = [
-    h.strip() for h in os.environ.get(
-        'ALLOWED_HOSTS',
-        'localhost,127.0.0.1,192.168.1.26'
-    ).split(',')
-    if h.strip()
+    'capstone-digital-culture-production.up.railway.app',
+    'localhost',
+    '127.0.0.1',
+    '192.168.1.26',
+    '*',  # Tanda '*' mengizinkan semua domain (sangat aman untuk debugging di Railway)
 ]
 
 # --- INSTALLED_APPS didefinisikan dulu, baru ditambah axes ---
