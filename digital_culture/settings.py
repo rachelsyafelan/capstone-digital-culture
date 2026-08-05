@@ -19,15 +19,20 @@ SECRET_KEY = os.environ.get(
 )
 
 # Force DEBUG = True sementara untuk melihat detail error di browser
-DEBUG = os.environ.get('DEBUG', 'False').lower() in ('1', 'true', 'yes')
+DEBUG = True
 
 # Tambahkan domain Railway ke dalam ALLOWED_HOSTS
 ALLOWED_HOSTS = [
     'capstone-digital-culture-production.up.railway.app',
+    '.railway.app',
     'localhost',
     '127.0.0.1',
-    '192.168.1.26',
-    '*',  # Tanda '*' mengizinkan semua domain (sangat aman untuk debugging di Railway)
+    '*',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.up.railway.app',
+    'https://capstone-digital-culture-production.up.railway.app',
 ]
 
 # --- INSTALLED_APPS didefinisikan dulu, baru ditambah axes ---
